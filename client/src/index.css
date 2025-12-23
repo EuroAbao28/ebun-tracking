@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import 'tailwindcss';
+
+/* @plugin "daisyui"; */
+@plugin "daisyui" {
+  themes: 'false';
+}
+
+@theme {
+  /* colors */
+  --color-primaryColor: #001e36;
+
+  /* shadows */
+  --shadow-card3: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+  --shadow-warning: 0px 2px 4px rgba(0, 0, 0, 0.2),
+    0px 3px 4px -3px rgba(0, 0, 0, 0.1), 0px -3px 0px inset rgba(0, 0, 0, 0.2);
+}
+
+@import 'react-toastify/dist/ReactToastify.css';
+
+.Toastify__toast-container,
+.Toastify__toast,
+.Toastify__toast-body,
+.Toastify__close-button {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.Toastify__toast--success {
+  @apply !bg-emerald-500;
+}
+
+.Toastify__toast--error {
+  @apply !bg-red-500;
+}
+
+.Toastify__toast--warning {
+  @apply !bg-orange-500;
+}
+
+.Toastify__toast--info {
+  @apply !bg-blue-500;
+}
+
+.Toastify__toast--default {
+  @apply !bg-emerald-500;
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
