@@ -1,6 +1,6 @@
 // host
 export const LOCAL = 'http://localhost:5000'
-export const LIVE = 'https://ebun-freight.onrender.com'
+export const LIVE = 'https://ebun-tracking.onrender.com'
 
 // truck
 export const API_TRUCK = `${LOCAL}/api/truck`
