@@ -174,7 +174,7 @@ function MyProfile () {
             name='role'
             placeholder='Role'
             value={editForm?.role?.replace('_', ' ')}
-            disabled={!isEditMode || isLoading || user.role === 'head_admin'}
+            disabled={true}
             onChange={handleChange}
           />
           <InputField

@@ -16,6 +16,7 @@ import { empty_illustration, error_illustration } from '../../consts/images'
 import { DateTime } from 'luxon'
 import ReplacementModal from '../../components/modals/ReplacementModal'
 import ReplacementHistoryModal from '../../components/modals/ReplacementHistoryModal'
+import { useUserContext } from '../../contexts/UserContext'
 
 // Add defaultFilters constant
 const defaultFilters = {
@@ -29,6 +30,8 @@ const defaultFilters = {
 }
 
 function Deployments () {
+  const { userData } = useUserContext()
+
   const [isDeploymentDetailsModalOpen, setIsDeploymentDetailsModalOpen] =
     useState(false)
   const [isCreateDeploymentModalOpen, setIsCreateDeploymentModalOpen] =
@@ -248,7 +251,6 @@ function Deployments () {
                 </div>
               </div>
             </div>
-
             {/* search */}
             <form
               onSubmit={handleApplyFilters}
@@ -278,7 +280,6 @@ function Deployments () {
                 <IoClose className='text-xl' />
               </button>
             </form>
-
             {/* pagination */}
             <div className='flex gap-4 items-center outline outline-gray-200 rounded'>
               <button
@@ -303,16 +304,18 @@ function Deployments () {
                 <MdOutlineKeyboardArrowRight />
               </button>
             </div>
-
             {/* create button */}
-            <button
-              onClick={() => setIsCreateDeploymentModalOpen(true)}
-              disabled={isDeploymentLoading}
-              className='flex items-center gap-4 bg-linear-to-b from-emerald-500 to-emerald-600 text-white rounded px-3 py-1 cursor-pointer active:scale-95 transition-all hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed'
-            >
-              <FaPlus className='text-sm' />
-              <p>Deploy Truck</p>
-            </button>
+            {(userData.data.role !== 'head_admin' ||
+              userData.data.role !== 'admin') && (
+              <button
+                onClick={() => setIsCreateDeploymentModalOpen(true)}
+                disabled={isDeploymentLoading}
+                className='flex items-center gap-4 bg-linear-to-b from-emerald-500 to-emerald-600 text-white rounded px-3 py-1 cursor-pointer active:scale-95 transition-all hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                <FaPlus className='text-sm' />
+                <p>Deploy Truck</p>
+              </button>
+            )}
           </div>
         </div>
 
