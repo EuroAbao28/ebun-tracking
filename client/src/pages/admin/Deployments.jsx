@@ -305,8 +305,7 @@ function Deployments () {
               </button>
             </div>
             {/* create button */}
-            {(userData.data.role !== 'head_admin' ||
-              userData.data.role !== 'admin') && (
+            {['head_admin', 'admin'].includes(userData.data.role) && (
               <button
                 onClick={() => setIsCreateDeploymentModalOpen(true)}
                 disabled={isDeploymentLoading}
