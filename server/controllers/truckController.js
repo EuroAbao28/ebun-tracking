@@ -15,7 +15,7 @@ const ActivityLog = require('../models/activityLogsModel')
 // create truck
 const createTruck = async (req, res, next) => {
   try {
-    const { plateNo, truckType, status } = req.body
+    const { plateNo, truckType, maxLoad, status } = req.body
 
     console.log('CREATE TRUCK BODY', req.body)
 
@@ -86,6 +86,7 @@ const createTruck = async (req, res, next) => {
     const newTruck = await Truck.create({
       plateNo,
       truckType,
+      maxLoad,
       status,
       imageUrl: imageData.url,
       imagePublicId: imageData.publicId
@@ -113,7 +114,6 @@ const getAllTrucks = async (req, res, next) => {
   try {
     const {
       truckType,
-      condition,
       status,
       search,
       sort,
@@ -135,7 +135,6 @@ const getAllTrucks = async (req, res, next) => {
 
     //  filters
     if (truckType) query.truckType = truckType
-    if (condition) query.condition = condition
     if (status) query.status = status
 
     // search
@@ -256,6 +255,8 @@ const updateTruck = async (req, res, next) => {
     if (truckType && truckType !== existingTruck.truckType)
       updatedFields.push('truck type')
     if (status && status !== existingTruck.status) updatedFields.push('status')
+    if (maxLoad && maxLoad !== existingTruck.maxLoad)
+      updatedFields.push('maximum load')
 
     const actionMessage =
       updatedFields.length > 0
@@ -267,6 +268,7 @@ const updateTruck = async (req, res, next) => {
       plateNo: plateNo || existingTruck.plateNo,
       truckType: truckType ?? existingTruck.truckType,
       status: status || existingTruck.status,
+      maxLoad: maxLoad || existingTruck.maxLoad,
       imageUrl,
       imagePublicId
     }

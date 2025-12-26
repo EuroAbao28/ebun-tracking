@@ -21,6 +21,7 @@ import {
   TRUCK_TYPES
 } from '../../utils/generalOptions'
 import useUpdateTruck from '../../hooks/useUpdateTruck'
+import { NumericFormat } from 'react-number-format'
 
 function TruckDetailsModal ({
   isOpen,
@@ -72,28 +73,6 @@ function TruckDetailsModal ({
         }
       }
     })
-  }
-
-  const handleQuantityChange = (toolName, quantity) => {
-    setEditForm(prev => ({
-      ...prev,
-      tools: prev.tools.map(item =>
-        item.tool === toolName
-          ? { ...item, quantity: parseInt(quantity) || 1 }
-          : item
-      )
-    }))
-  }
-
-  // Check if a tool is selected
-  const isToolSelected = toolName => {
-    return editForm.tools?.some(item => item.tool === toolName)
-  }
-
-  // Get quantity for a selected tool
-  const getToolQuantity = toolName => {
-    const toolItem = editForm.tools?.find(item => item.tool === toolName)
-    return toolItem ? toolItem.quantity : 1
   }
 
   const handleUpdateTruck = async e => {
@@ -244,6 +223,7 @@ function TruckDetailsModal ({
                     placeholder='Plate No.'
                     value={editForm?.plateNo}
                     disabled={!isEditMode}
+                    isUppercase={true}
                     onChange={handleChange}
                   />
 
@@ -316,6 +296,17 @@ function TruckDetailsModal ({
                       </div>
                     )}
                   </label>
+
+                  <InputField
+                    label='Max Load'
+                    type='number'
+                    name='maxLoad'
+                    placeholder='Max Load'
+                    value={editForm?.maxLoad}
+                    disabled={!isEditMode}
+                    formatNumber={true}
+                    onChange={handleChange}
+                  />
 
                   <div className='col-span-full flex gap-6 border-t-2 border-dashed border-gray-100 mt-6 pt-6 transition-all'>
                     <label className='flex flex-col gap-1 flex-1'>
@@ -413,8 +404,44 @@ const InputField = ({
   value,
   onChange,
   disabled,
-  isRequired = true
+  isRequired = true,
+  isCapitalize = true,
+  isUppercase = false,
+  // New props for number formatting
+  formatNumber = false,
+  thousandSeparator = true,
+  decimalScale = 0,
+  allowNegative = false
 }) => {
+  if (formatNumber && type === 'number') {
+    return (
+      <label className={`col-span-${colSpan} flex flex-col gap-1`}>
+        <span className='uppercase text-xs text-gray-500 font-semibold text-nowrap'>
+          {label}
+        </span>
+        <NumericFormat
+          thousandSeparator={thousandSeparator}
+          decimalScale={decimalScale}
+          allowNegative={allowNegative}
+          value={value}
+          onValueChange={values => {
+            const syntheticEvent = {
+              target: {
+                name: name,
+                value: values.floatValue || ''
+              }
+            }
+            onChange(syntheticEvent)
+          }}
+          placeholder={placeholder}
+          disabled={disabled}
+          required={isRequired}
+          className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400'
+        />
+      </label>
+    )
+  }
+
   return (
     <label className={`col-span-${colSpan} flex flex-col gap-1`}>
       <span className='uppercase text-xs text-gray-500 font-semibold'>
@@ -430,7 +457,12 @@ const InputField = ({
         onChange={onChange}
         disabled={disabled}
         required={isRequired}
-        className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400 w-full uppercase'
+        className={clsx(
+          'outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400 w-full',
+          {
+            uppercase: isUppercase
+          }
+        )}
       />
     </label>
   )

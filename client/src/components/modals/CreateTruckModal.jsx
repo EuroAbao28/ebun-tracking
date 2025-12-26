@@ -13,6 +13,8 @@ import { FaSave } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 import useCreateTruck from '../../hooks/useCreateTruck'
 import { TRUCK_STATUSES, TRUCK_TYPES } from '../../utils/generalOptions'
+import { NumericFormat } from 'react-number-format'
+import clsx from 'clsx'
 
 function CreateTruckModal ({ isOpen, onClose, onCreate, allTools }) {
   const [formData, setFormData] = useState({
@@ -68,49 +70,6 @@ function CreateTruckModal ({ isOpen, onClose, onCreate, allTools }) {
         image: null
       }))
     }
-  }
-
-  const handleToolChange = e => {
-    const { value, checked } = e.target
-    const tool = allTools.find(t => t._id === value)
-
-    setFormData(prev => {
-      if (checked) {
-        // Add tool with default quantity of 1
-        return {
-          ...prev,
-          tools: [...prev.tools, { tool: value, quantity: 1 }]
-        }
-      } else {
-        // Remove tool
-        return {
-          ...prev,
-          tools: prev.tools.filter(item => item.tool !== value)
-        }
-      }
-    })
-  }
-
-  const handleQuantityChange = (toolId, quantity) => {
-    setFormData(prev => ({
-      ...prev,
-      tools: prev.tools.map(item =>
-        item.tool === toolId
-          ? { ...item, quantity: parseInt(quantity) || 1 }
-          : item
-      )
-    }))
-  }
-
-  // Check if a tool is selected
-  const isToolSelected = toolId => {
-    return formData.tools.some(item => item.tool === toolId)
-  }
-
-  // Get quantity for a selected tool
-  const getToolQuantity = toolId => {
-    const toolItem = formData.tools.find(item => item.tool === toolId)
-    return toolItem ? toolItem.quantity : 1
   }
 
   // create truck
@@ -212,6 +171,7 @@ function CreateTruckModal ({ isOpen, onClose, onCreate, allTools }) {
                   placeholder='Plate No.'
                   plateNoMaxLength={7}
                   value={formData.plateNo}
+                  isUppercase={true}
                   onChange={handleChange}
                 />
 
@@ -267,6 +227,17 @@ function CreateTruckModal ({ isOpen, onClose, onCreate, allTools }) {
                   </div>
                 </label>
 
+                {/* max load */}
+                <InputField
+                  label='Max Load'
+                  type='number'
+                  name='maxLoad'
+                  placeholder='Max Load'
+                  value={formData.maxLoad}
+                  formatNumber={true}
+                  onChange={handleChange}
+                />
+
                 <div className='mt-12 col-span-full'>
                   <button
                     type='submit'
@@ -299,13 +270,48 @@ const InputField = ({
   label,
   type,
   name,
+  placeholder,
   value,
-  pattern,
   onChange,
   disabled,
-  plateNoMaxLength,
-  isRequired = true
+  isRequired = true,
+  isCapitalize = true,
+  isUppercase = false,
+  // New props for number formatting
+  formatNumber = false,
+  thousandSeparator = true,
+  decimalScale = 0,
+  allowNegative = false
 }) => {
+  if (formatNumber && type === 'number') {
+    return (
+      <label className={`col-span-${colSpan} flex flex-col gap-1`}>
+        <span className='uppercase text-xs text-gray-500 font-semibold text-nowrap'>
+          {label}
+        </span>
+        <NumericFormat
+          thousandSeparator={thousandSeparator}
+          decimalScale={decimalScale}
+          allowNegative={allowNegative}
+          value={value}
+          onValueChange={values => {
+            const syntheticEvent = {
+              target: {
+                name: name,
+                value: values.floatValue || ''
+              }
+            }
+            onChange(syntheticEvent)
+          }}
+          placeholder={placeholder}
+          disabled={disabled}
+          required={isRequired}
+          className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400'
+        />
+      </label>
+    )
+  }
+
   return (
     <label className={`col-span-${colSpan} flex flex-col gap-1`}>
       <span className='uppercase text-xs text-gray-500 font-semibold'>
@@ -314,15 +320,19 @@ const InputField = ({
       <input
         type={type}
         name={name}
-        // placeholder={placeholder}
+        placeholder={placeholder}
         value={value}
         minLength={2}
-        maxLength={plateNoMaxLength || 30}
-        pattern={pattern}
+        maxLength={30}
         onChange={onChange}
         disabled={disabled}
         required={isRequired}
-        className='outline outline-gray-300 px-3 py-2 rounded break-all focus:outline-gray-400 uppercase'
+        className={clsx(
+          'outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400 w-full',
+          {
+            uppercase: isUppercase
+          }
+        )}
       />
     </label>
   )

@@ -340,7 +340,7 @@ function TruckManagement () {
             </div>
           </div>
         ) : (
-          <div className='relative flex-1 overflow-y-auto'>
+          <div className='relative flex-1 overflow-y-auto scrollbar-thin'>
             <div className='absolute inset-0'>
               <table className='table table-md table-pin-rows table-pin-cols'>
                 <thead>
@@ -349,7 +349,7 @@ function TruckManagement () {
                     <td>Image</td>
                     <td>Plate No.</td>
                     <td>Type</td>
-                    <td>Max Load</td>
+                    <td>Max Load (kg)</td>
                     <td>Status</td>
                   </tr>
                 </thead>
@@ -377,7 +377,7 @@ function TruckManagement () {
                       </td>
                       <td className='uppercase'>{truck.plateNo}</td>
                       <td className='capitalize'>{truck.truckType}</td>
-                      <td></td>
+                      <td>{truck.maxLoad?.toLocaleString()}</td>
                       <td>
                         <div
                           className={clsx(

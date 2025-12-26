@@ -22,6 +22,9 @@ const truckSchema = new mongoose.Schema(
         'multicab'
       ]
     },
+    maxLoad: {
+      type: Number
+    },
     status: {
       type: String,
       enum: ['available', 'deployed', 'unavailable'],

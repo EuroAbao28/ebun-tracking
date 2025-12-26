@@ -321,7 +321,7 @@ function CalendarPage () {
           onClick={() => handleDateCellClick(date)}
         >
           <div
-            className={`font-semibol mb-2 p-2 ${
+            className={`font-semibold pt-2 pl-2 ${
               isToday ? 'text-blue-600' : 'text-gray-700'
             }`}
           >
@@ -329,7 +329,7 @@ function CalendarPage () {
           </div>
 
           <div
-            className='space-y-1 max-h-48 overflow-y-auto p-1'
+            className='space-y-1 max-h-48 overflow-y-auto scrollbar-thin p-1'
             onClick={e => e.stopPropagation()}
           >
             {dayEvents.map(event => (
@@ -435,7 +435,7 @@ function CalendarPage () {
       return (
         <td
           key={index}
-          className={`border border-gray-200 transition-colors align-top relative overflow-y-auto ${
+          className={`border border-gray-200 transition-colors align-top relative overflow-y-auto scrollbar-thin ${
             isToday
               ? 'bg-blue-50 ring-1 ring-blue-200'
               : 'bg-white hover:bg-gray-50'
@@ -443,10 +443,10 @@ function CalendarPage () {
         >
           <div className='absolute top-0 left-0 right-0'>
             <div
-              className='p-2 space-y-2 cursor-pointer'
+              className='p-1 space-y-2 cursor-pointer'
               onClick={() => handleDateCellClick(date)}
             >
-              <div onClick={e => e.stopPropagation()} className='space-y-1.5'>
+              <div onClick={e => e.stopPropagation()} className='space-y-1'>
                 {dayEvents.map(event => (
                   <div
                     key={event.id}
@@ -507,7 +507,7 @@ function CalendarPage () {
     )
 
     return (
-      <div className='flex-1 overflow-y-scroll relative'>
+      <div className='flex-1 overflow-y-auto scrollbar-thin relative'>
         {events.length === 0 ? (
           <div className='text-center text-gray-500 py-8 italic'>
             No deployment events for this day
@@ -665,7 +665,7 @@ function CalendarPage () {
             <div className='absolute inset-0'>
               <div className='h-full flex flex-col'>
                 {/* Month Table */}
-                <div className='flex-1 overflow-auto'>
+                <div className='flex-1 overflow-auto scrollbar-thin'>
                   <table className='w-full h-full border-collapse'>
                     <thead className='sticky top-0 z-30 bg-white'>
                       <tr>

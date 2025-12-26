@@ -357,7 +357,7 @@ function Deployments () {
             </div>
           </div>
         ) : (
-          <div className='relative flex-1 overflow-y-auto'>
+          <div className='relative flex-1 overflow-y-auto scrollbar-thin'>
             <div className='absolute inset-0'>
               <table className='table table-sm table-pin-rows table-pin-cols'>
                 <thead>

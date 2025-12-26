@@ -28,6 +28,7 @@
     "react-number-format": "^5.4.4",
     "react-router": "^7.9.4",
     "react-toastify": "^11.0.5",
+    "tailwind-scrollbar": "^4.0.2",
     "tailwindcss": "^4.1.16",
     "untitledui": "^0.1.46"
   },

@@ -517,7 +517,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className='flex-1 relative overflow-y-auto'>
+    <div className='flex-1 relative overflow-y-auto scrollbar-thin'>
       <div className='absolute inset-0 space-y-6'>
         {/* Header */}
         <div>

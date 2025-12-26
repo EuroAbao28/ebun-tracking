@@ -19,6 +19,7 @@ import clsx from 'clsx'
 import { PiMapPinAreaFill } from 'react-icons/pi'
 import useCreateDeployment from '../../hooks/useCreateDeployment'
 import { PICKUP_LOCATION } from '../../utils/deploymentOptions'
+import { NumericFormat } from 'react-number-format'
 
 function CreateDeploymentModal ({ isOpen, onClose, onCreate, trucks, drivers }) {
   const [formData, setFormData] = useState({
@@ -310,6 +311,7 @@ function CreateDeploymentModal ({ isOpen, onClose, onCreate, trucks, drivers }) 
                   placeholder='Helper Count'
                   value={formData.helperCount}
                   onChange={handleChange}
+                  formatNumber={true}
                 />
 
                 <InputField
@@ -377,6 +379,7 @@ function CreateDeploymentModal ({ isOpen, onClose, onCreate, trucks, drivers }) 
 const InputField = ({
   colSpan = 1,
   label,
+  placeholder = '',
   type,
   name,
   value,
@@ -384,8 +387,42 @@ const InputField = ({
   onChange,
   disabled,
   plateNoMaxLength,
-  isRequired = true
+  isRequired = true,
+  // New props for number formatting
+  formatNumber = false,
+  thousandSeparator = true,
+  decimalScale = 0,
+  allowNegative = false
 }) => {
+  if (formatNumber && type === 'number') {
+    return (
+      <label className={`col-span-${colSpan} flex flex-col gap-1`}>
+        <span className='uppercase text-xs text-gray-500 font-semibold text-nowrap'>
+          {label}
+        </span>
+        <NumericFormat
+          thousandSeparator={thousandSeparator}
+          decimalScale={decimalScale}
+          allowNegative={allowNegative}
+          value={value}
+          onValueChange={values => {
+            const syntheticEvent = {
+              target: {
+                name: name,
+                value: values.floatValue || ''
+              }
+            }
+            onChange(syntheticEvent)
+          }}
+          placeholder={placeholder}
+          disabled={disabled}
+          required={isRequired}
+          className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400'
+        />
+      </label>
+    )
+  }
+
   return (
     <label className={`col-span-${colSpan} flex flex-col gap-1`}>
       <span className='uppercase text-xs text-gray-500 font-semibold'>
