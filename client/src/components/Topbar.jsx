@@ -38,8 +38,8 @@ function TopBar () {
               className={clsx(
                 'w-10 aspect-square mask mask-squircle object-cover object-center',
                 {
-                  'opacity-100': userData?.userData?.imageUrl,
-                  'opacity-10': !userData?.userData?.imageUrl
+                  'opacity-100': userData?.data?.imageUrl,
+                  'opacity-10': !userData?.data?.imageUrl
                 }
               )}
             />
