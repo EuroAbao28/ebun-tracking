@@ -7,6 +7,10 @@ const getAllActivityLogs = async (req, res, next) => {
 
     const query = {}
 
+    if (!['head_admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
+
     // filters
     if (type) query.type = type
 
