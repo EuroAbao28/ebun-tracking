@@ -17,7 +17,9 @@ const createTruck = async (req, res, next) => {
   try {
     const { plateNo, truckType, maxLoad, status } = req.body
 
-    console.log('CREATE TRUCK BODY', req.body)
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     // validate fields
     validateFields(plateNo)
@@ -122,7 +124,9 @@ const getAllTrucks = async (req, res, next) => {
       showDeleted
     } = req.query
 
-    console.log(req.query)
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     const query = {}
 
@@ -199,6 +203,10 @@ const updateTruck = async (req, res, next) => {
   try {
     const { id } = req.params
     const { plateNo, truckType, status } = req.body
+
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     console.log('UPDATE TRUCK BODY', req.body)
 
@@ -298,7 +306,9 @@ const hardDeleteTruck = async (req, res, next) => {
   try {
     const { id } = req.params
 
-    console.log('DELETE TRUCK ID', id)
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     // Find the truck to delete
     const truckToDelete = await Truck.findByIdAndDelete(id)
@@ -323,6 +333,10 @@ const hardDeleteTruck = async (req, res, next) => {
 const softDeleteTruck = async (req, res, next) => {
   try {
     const { id } = req.params
+
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     // Find the truck
     const truck = await Truck.findById(id)

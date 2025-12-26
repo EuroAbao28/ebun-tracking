@@ -12,7 +12,9 @@ const createDriver = async (req, res, next) => {
   try {
     const { firstname, lastname, phoneNo, status, licenseNo } = req.body
 
-    console.log(req.body)
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     // validate fields
     validateFields(
@@ -114,6 +116,10 @@ const getAllDrivers = async (req, res, next) => {
   try {
     const { status, sort, search, perPage, page = 1, showDeleted } = req.query
 
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
+
     const query = {}
 
     if (showDeleted !== 'true') {
@@ -175,6 +181,10 @@ const updateDriver = async (req, res, next) => {
     const { id } = req.params
     const { firstname, lastname, phoneNo, status, licenseNo, tripCount } =
       req.body
+
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     console.log(req.body)
 
@@ -282,6 +292,10 @@ const hardDeleteDriver = async (req, res, next) => {
   try {
     const { id } = req.params
 
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
+
     console.log('DELETE DRIVER ID', id)
 
     // Find the driver to delete
@@ -308,6 +322,10 @@ const hardDeleteDriver = async (req, res, next) => {
 const softDeleteDriver = async (req, res, next) => {
   try {
     const { id } = req.params
+
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     // Find the driver
     const driver = await Driver.findById(id)

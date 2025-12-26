@@ -171,12 +171,7 @@ const createAdmin = async (req, res, next) => {
 
     console.log(req.body)
 
-    // Check permissions
-    if (req.user.role !== 'head_admin' && req.user.role !== 'admin') {
-      return next(createError(403, 'Access denied'))
-    }
-
-    if (req.user.role === 'admin' && existingUser.role === 'admin') {
+    if (!['head_admin'].includes(req.user.role)) {
       return next(createError(403, 'Access denied'))
     }
 
@@ -422,6 +417,10 @@ const getAllUsers = async (req, res, next) => {
     } = req.query
 
     const query = {}
+
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     if (showDeleted !== 'true') {
       query.$or = [
@@ -687,6 +686,10 @@ const hardDeleteUser = async (req, res, next) => {
 
     console.log('DELETE USER ID', id)
 
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
+
     // Find the user to delete
     const userToDelete = await User.findByIdAndDelete(id)
     if (!userToDelete) {
@@ -711,6 +714,10 @@ const hardDeleteUser = async (req, res, next) => {
 const softDeleteUser = async (req, res, next) => {
   try {
     const { id } = req.params
+
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
 
     const user = await User.findById(id)
     if (!user) {
