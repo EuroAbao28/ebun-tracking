@@ -27,7 +27,7 @@ const createDeployment = async (req, res, next) => {
     } = req.body
 
     // Check permissions
-    if (req.user.role !== 'head_admin' || req.user.role !== 'admin') {
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
       return next(createError(403, 'Access denied'))
     }
 

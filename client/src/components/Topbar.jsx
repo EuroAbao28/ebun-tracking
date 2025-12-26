@@ -4,6 +4,8 @@ import { Link } from 'react-router'
 import { TbLogout, TbUserSquareRounded } from 'react-icons/tb'
 import { useUserContext } from '../contexts/UserContext'
 import LogoutModal from './modals/LogoutModal'
+import { no_image, placeholder_user, user_placeholder } from '../consts/images'
+import clsx from 'clsx'
 
 function TopBar () {
   const { userData } = useUserContext()
@@ -23,15 +25,22 @@ function TopBar () {
           >
             <div className='flex flex-col items-end'>
               <p className='text-sm font-semibold text-nowrap capitalize'>
-                {`${userData.data.firstname} ${userData.data.lastname}`}
+                {userData.data._id
+                  ? `${userData.data.firstname} ${userData.data.lastname}`
+                  : ''}
               </p>
               <span className='text-xs capitalize'>
                 {userData?.data?.role?.replace('_', ' ')}
               </span>
             </div>
             <img
-              src={userData.data.imageUrl}
-              className='w-10 aspect-square mask mask-squircle object-cover object-center'
+              src={userData.data.imageUrl || no_image}
+              className={clsx(
+                'w-10 aspect-square mask mask-squircle object-cover object-center',
+                {
+                  'opacity-10': !userData?.userData?.imageUrl
+                }
+              )}
             />
           </div>
 
