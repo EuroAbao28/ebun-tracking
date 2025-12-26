@@ -3,28 +3,28 @@ export const LOCAL = 'http://localhost:5000'
 export const LIVE = 'https://ebun-tracking.onrender.com'
 
 // truck
-export const API_TRUCK = `${LIVE}/api/truck`
+export const API_TRUCK = `${LOCAL}/api/truck`
 
 // driver
-export const API_DRIVER = `${LIVE}/api/driver`
+export const API_DRIVER = `${LOCAL}/api/driver`
 
 // admin
-export const API_USER = `${LIVE}/api/user`
+export const API_USER = `${LOCAL}/api/user`
 
 // tool
-export const API_TOOL = `${LIVE}/api/tool`
+export const API_TOOL = `${LOCAL}/api/tool`
 
 // deployment
-export const API_DEPLOYMENT = `${LIVE}/api/deployment`
+export const API_DEPLOYMENT = `${LOCAL}/api/deployment`
 
 // analytics
-export const API_ANALYTICS = `${LIVE}/api/analytics`
+export const API_ANALYTICS = `${LOCAL}/api/analytics`
 
 //  access
-export const API_CLIENT = `${LIVE}/api/client`
+export const API_CLIENT = `${LOCAL}/api/client`
 
 // activitylogs
-export const API_ACTIVITY_LOGS = `${LIVE}/api/activity-logs`
+export const API_ACTIVITY_LOGS = `${LOCAL}/api/activity-logs`
 
 // timeline logs
-export const API_TIMELINE_LOGS = `${LIVE}/api/timeline-logs`
+export const API_TIMELINE_LOGS = `${LOCAL}/api/timeline-logs`
