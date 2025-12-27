@@ -124,7 +124,7 @@ const getAllTrucks = async (req, res, next) => {
       showDeleted
     } = req.query
 
-    if (!['head_admin', 'admin'].includes(req.user.role)) {
+    if (!['head_admin', 'admin', 'visitor'].includes(req.user.role)) {
       return next(createError(403, 'Access denied'))
     }
 

@@ -12,7 +12,7 @@ const createDriver = async (req, res, next) => {
   try {
     const { firstname, lastname, phoneNo, status, licenseNo } = req.body
 
-    if (!['head_admin', 'admin'].includes(req.user.role)) {
+    if (!['head_admin', 'admin', 'visitor'].includes(req.user.role)) {
       return next(createError(403, 'Access denied'))
     }
 
