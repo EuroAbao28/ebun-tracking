@@ -542,13 +542,13 @@ const updateUser = async (req, res, next) => {
     }
 
     // Check permissions
-    if (
-      req.user.role !== 'head_admin' ||
-      req.user.role !== 'admin' ||
-      req.user.role !== 'visitor'
-    ) {
-      return next(createError(403, 'Access denied'))
-    }
+    // if (
+    //   req.user.role !== 'head_admin' &&
+    //   req.user.role !== 'admin' &&
+    //   req.user.role !== 'visitor'
+    // ) {
+    //   return next(createError(403, 'Access denied'))
+    // }
 
     if (id !== req.user._id) {
       return next(createError(403, 'Access denied'))
