@@ -202,7 +202,7 @@ const getAllTrucks = async (req, res, next) => {
 const updateTruck = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { plateNo, truckType, status } = req.body
+    const { plateNo, truckType, status, maxLoad } = req.body
 
     if (!['head_admin', 'admin'].includes(req.user.role)) {
       return next(createError(403, 'Access denied'))

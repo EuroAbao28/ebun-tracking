@@ -186,36 +186,6 @@ function ActivityLogsPage () {
             </div>
           </div>
 
-          {/* search */}
-          <form
-            onSubmit={handleApplyFilters}
-            className='flex items-center outline outline-gray-200 rounded pl-3 pr-1 focus-within:outline-gray-300 transition-all max-xl:mr-auto'
-          >
-            <FaSearch className='text-sm' />
-            <input
-              type='text'
-              name='search'
-              placeholder='Search'
-              value={tempFilters.search}
-              onChange={handleChangeFilter}
-              autoComplete='off'
-              className='w-60 focus:outline-none ml-3 mr-1'
-            />
-            <button
-              type='button'
-              onClick={handleClearSearch}
-              className={clsx(
-                'rounded-full p-1 hover:bg-gray-50 cursor-pointer transition-all duration-300',
-                {
-                  'opacity-100': tempFilters.search,
-                  'opacity-0 -z-10': !tempFilters.search
-                }
-              )}
-            >
-              <IoClose className='text-xl' />
-            </button>
-          </form>
-
           {/* pagination */}
           <div className='flex gap-4 items-center outline outline-gray-200 rounded'>
             <button

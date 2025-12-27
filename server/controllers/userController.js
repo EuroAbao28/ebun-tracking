@@ -14,6 +14,30 @@ const { cloudinary } = require('../middlewares/multerCloudinary')
 const sendStatusEmail = require('../utils/emailService')
 const ActivityLog = require('../models/activityLogsModel')
 
+const hasInvalidChars = input => {
+  if (typeof input !== 'string') return false
+
+  // Check for dangerous characters and patterns
+  const dangerousPatterns = [
+    /<script/i, // Script tags
+    /javascript:/i, // JavaScript protocol
+    /on\w+\s*=/i, // Event handlers (onload, onerror, etc.)
+    /eval\(/i, // eval() function
+    /document\./i, // Document object access
+    /window\./i, // Window object access
+    /alert\(/i, // alert() function
+    /confirm\(/i, // confirm() function
+    /prompt\(/i, // prompt() function
+    /<\/?iframe/i, // Iframe tags
+    /<\/?object/i, // Object tags
+    /<\/?embed/i, // Embed tags
+    /data:/i, // Data URLs
+    /vbscript:/i // VBScript
+  ]
+
+  return dangerousPatterns.some(pattern => pattern.test(input))
+}
+
 // create user
 const createUser = async (req, res, next) => {
   try {
@@ -31,6 +55,25 @@ const createUser = async (req, res, next) => {
 
     console.log(req.body)
 
+    // XSS VALIDATION - CHECK ALL INPUTS FOR MALICIOUS CONTENT
+    const fieldsToCheck = [
+      { name: 'firstname', value: firstname },
+      { name: 'middlename', value: middlename },
+      { name: 'lastname', value: lastname },
+      { name: 'email', value: email },
+      { name: 'phoneNo', value: phoneNo }
+    ]
+
+    for (const field of fieldsToCheck) {
+      if (field.value && hasInvalidChars(field.value)) {
+        console.warn(
+          `XSS attempt detected in ${field.name}:`,
+          field.value.substring(0, 100)
+        )
+        return next(createError(400, `Invalid characters in ${field.name}`))
+      }
+    }
+
     // validate fields
     validateFields({
       firstname,
@@ -41,7 +84,8 @@ const createUser = async (req, res, next) => {
       confirmPassword
     })
 
-    if (status == 'admin') return next(createError(400, 'Access denied'))
+    if (role === 'admin' || role === 'head_admin')
+      return next(createError(400, 'Invalid role type'))
 
     // validate if password match
     if (password !== confirmPassword) {

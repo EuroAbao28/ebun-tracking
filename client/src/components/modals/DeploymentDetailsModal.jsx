@@ -25,6 +25,7 @@ import { toast } from 'react-toastify'
 import { HiDotsHorizontal } from 'react-icons/hi'
 import { NumericFormat } from 'react-number-format'
 import { LuClock } from 'react-icons/lu'
+import { PICKUP_LOCATION } from '../../utils/deploymentOptions'
 
 function DeploymentDetailsModal ({
   isOpen,
@@ -146,15 +147,17 @@ function DeploymentDetailsModal ({
   const filteredTrucks =
     trucks?.filter(
       truck =>
-        truck.plateNo.toLowerCase().includes(truckQuery.toLowerCase()) ||
-        truck.truckType.toLowerCase().includes(truckQuery.toLowerCase())
+        truck.status === 'available' && // Only show available trucks
+        (truck.plateNo.toLowerCase().includes(truckQuery.toLowerCase()) ||
+          truck.truckType.toLowerCase().includes(truckQuery.toLowerCase()))
     ) || []
 
   const filteredDrivers =
     drivers?.filter(
       driver =>
-        driver.firstname.toLowerCase().includes(driverQuery.toLowerCase()) ||
-        driver.lastname.toLowerCase().includes(driverQuery.toLowerCase())
+        driver.status === 'available' && // Only show available drivers
+        (driver.firstname.toLowerCase().includes(driverQuery.toLowerCase()) ||
+          driver.lastname.toLowerCase().includes(driverQuery.toLowerCase()))
     ) || []
 
   const filteredReplacementTrucks =
@@ -930,6 +933,7 @@ function DeploymentDetailsModal ({
                           value={editForm?.helperCount}
                           disabled={!isEditMode}
                           onChange={handleChange}
+                          formatNumber={true}
                         />
 
                         {/* status */}
@@ -1214,6 +1218,7 @@ function DeploymentDetailsModal ({
                           value={editForm?.helperCount}
                           disabled={!isEditMode}
                           onChange={handleChange}
+                          formatNumber={true}
                         />
 
                         {/* status */}
@@ -1318,16 +1323,32 @@ function DeploymentDetailsModal ({
                       onChange={handleChange}
                     />
 
-                    <InputField
-                      label='Destination'
-                      type='text'
-                      name='destination'
-                      placeholder='Destination'
-                      maxLength={50}
-                      value={editForm?.destination}
-                      disabled={!isEditMode}
-                      onChange={handleChange}
-                    />
+                    <label className='flex flex-col gap-1'>
+                      <span className='uppercase text-xs text-gray-500 font-semibold'>
+                        Destination
+                      </span>
+                      {isEditMode ? (
+                        <div className='relative'>
+                          <select
+                            name='destination'
+                            value={editForm?.destination}
+                            onChange={handleChange}
+                            className='outline outline-gray-200 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
+                          >
+                            {PICKUP_LOCATION.map((item, index) => (
+                              <option key={index} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
+                          <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
+                        </div>
+                      ) : (
+                        <div className='outline outline-gray-200 px-3 py-2 rounded'>
+                          {editForm?.destination}
+                        </div>
+                      )}
+                    </label>
                   </div>
                 </div>
 
