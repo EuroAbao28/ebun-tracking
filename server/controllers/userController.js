@@ -550,7 +550,7 @@ const updateUser = async (req, res, next) => {
       return next(createError(403, 'Access denied a'))
     }
 
-    if (id.toString() !== req.user._id) {
+    if (id.toString() !== req.user._id.toString()) {
       return next(createError(403, 'Access denied b'))
     }
 
