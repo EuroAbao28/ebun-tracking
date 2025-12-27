@@ -17,6 +17,7 @@ import { DateTime } from 'luxon'
 import ReplacementModal from '../../components/modals/ReplacementModal'
 import ReplacementHistoryModal from '../../components/modals/ReplacementHistoryModal'
 import { useUserContext } from '../../contexts/UserContext'
+import DeleteDeploymentModal from '../../components/modals/DeleteDeploymentModal'
 
 // Add defaultFilters constant
 const defaultFilters = {
@@ -38,6 +39,8 @@ function Deployments () {
     useState(false)
   const [isReplacementModalOpen, setIsReplacementModalOpen] = useState(false)
   const [showReplacementHistory, setShowReplacementHistory] = useState(false)
+  const [isDeleteDeploymentModalOpen, setIsDeleteDeploymentModalOpen] =
+    useState(false)
 
   const { getAllDeploymentFunction, isLoading: isDeploymentLoading } =
     useGetAllDeployment()
@@ -114,6 +117,15 @@ function Deployments () {
           : deployment
       )
     )
+  }
+
+  // for removing the deleted deployment
+  const handleRemoveDeletedDeployment = deletedDeployment => {
+    setAllDeployments(prev =>
+      prev.filter(deployment => deployment._id !== deletedDeployment)
+    )
+    setIsDeleteDeploymentModalOpen(false)
+    setIsDeploymentDetailsModalOpen(false)
   }
 
   useEffect(() => {
@@ -598,6 +610,7 @@ function Deployments () {
         drivers={allDrivers}
         trucks={allTrucks}
         onUpdate={handleUpdateAllDeployments}
+        openDeleteModal={() => setIsDeleteDeploymentModalOpen(true)}
         openReplacementModal={() => setIsReplacementModalOpen(true)}
         openReplacementHistory={() => setShowReplacementHistory(true)}
         updatable={true}
@@ -627,6 +640,13 @@ function Deployments () {
         isOpen={showReplacementHistory}
         onClose={() => setShowReplacementHistory(false)}
         deployment={selectedDeployment}
+      />
+
+      <DeleteDeploymentModal
+        isOpen={isDeleteDeploymentModalOpen}
+        onClose={() => setIsDeleteDeploymentModalOpen(false)}
+        deployment={selectedDeployment}
+        onDelete={handleRemoveDeletedDeployment}
       />
     </>
   )

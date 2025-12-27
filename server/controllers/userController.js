@@ -541,9 +541,6 @@ const updateUser = async (req, res, next) => {
       return next(createError(404, 'User not found'))
     }
 
-    if (req.user.role === 'visitor' && id === req.user._id) {
-    }
-
     // Check permissions
     if (
       req.user.role !== 'head_admin' &&
@@ -553,7 +550,7 @@ const updateUser = async (req, res, next) => {
       return next(createError(403, 'Access denied'))
     }
 
-    if (req.user.role === 'admin' && existingUser.role === 'admin') {
+    if (id !== req.user._id) {
       return next(createError(403, 'Access denied'))
     }
 

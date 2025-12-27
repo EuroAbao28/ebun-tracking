@@ -8,6 +8,9 @@ const getDashboardAnalytics = async (req, res) => {
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
+    // Common filter to exclude soft-deleted records
+    const notDeletedFilter = { isSoftDeleted: { $ne: true } }
+
     const [
       // Basic counts
       totalTrucks,
@@ -48,43 +51,66 @@ const getDashboardAnalytics = async (req, res) => {
       pendingDeployments,
       preparingDeployments
     ] = await Promise.all([
-      // Basic counts
-      Truck.countDocuments(),
-      Driver.countDocuments({ isSoftDeleted: { $ne: true } }),
+      // Basic counts - exclude soft-deleted
+      Truck.countDocuments(notDeletedFilter),
+      Driver.countDocuments(notDeletedFilter),
       Deployment.countDocuments({
+        ...notDeletedFilter,
         status: { $in: ['ongoing', 'in-progress'] }
       }),
-      Truck.countDocuments({ status: 'available' }),
-      Driver.countDocuments({ status: 'active' }),
+      Truck.countDocuments({ ...notDeletedFilter, status: 'available' }),
+      Driver.countDocuments({ ...notDeletedFilter, status: 'available' }),
 
-      // Status counts
-      Truck.countDocuments({ condition: 'maintenance-required' }),
-      Truck.countDocuments({ condition: 'under-maintenance' }),
-      Driver.countDocuments({ status: 'inactive' }),
-      Deployment.countDocuments({ status: 'completed' }),
-      Deployment.countDocuments({ status: 'canceled' }),
+      // Status counts - exclude soft-deleted
+      Truck.countDocuments({ ...notDeletedFilter, status: 'unavailable' }),
+      Truck.countDocuments({ ...notDeletedFilter, status: 'unavailable' }),
+      Driver.countDocuments({ ...notDeletedFilter, status: 'unavailable' }),
+      Deployment.countDocuments({ ...notDeletedFilter, status: 'completed' }),
+      Deployment.countDocuments({ ...notDeletedFilter, status: 'canceled' }),
 
-      // Recent deployments
-      Deployment.countDocuments({ createdAt: { $gte: last7Days } }),
-      Deployment.countDocuments({ createdAt: { $gte: last7Days } }),
-      Deployment.countDocuments({ createdAt: { $gte: last30Days } }),
+      // Recent deployments - exclude soft-deleted
+      Deployment.countDocuments({
+        ...notDeletedFilter,
+        createdAt: { $gte: last7Days }
+      }),
+      Deployment.countDocuments({
+        ...notDeletedFilter,
+        createdAt: { $gte: last7Days }
+      }),
+      Deployment.countDocuments({
+        ...notDeletedFilter,
+        createdAt: { $gte: last30Days }
+      }),
 
-      // Truck Status Distribution
-      Truck.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+      // Truck Status Distribution - exclude soft-deleted
+      Truck.aggregate([
+        { $match: notDeletedFilter },
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
 
-      // Truck Type Distribution
-      Truck.aggregate([{ $group: { _id: '$truckType', count: { $sum: 1 } } }]),
+      // Truck Type Distribution - exclude soft-deleted
+      Truck.aggregate([
+        { $match: notDeletedFilter },
+        { $group: { _id: '$truckType', count: { $sum: 1 } } }
+      ]),
 
-      // Truck Condition Analysis
-      Truck.aggregate([{ $group: { _id: '$condition', count: { $sum: 1 } } }]),
+      // Truck Condition Analysis - exclude soft-deleted (note: no condition field in schema)
+      Truck.aggregate([
+        { $match: notDeletedFilter },
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
 
-      // Driver Status Distribution
-      Driver.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
-
-      // Top Drivers by Trip Count
+      // Driver Status Distribution - exclude soft-deleted
       Driver.aggregate([
-        { $match: { isSoftDeleted: { $ne: true } } },
+        { $match: notDeletedFilter },
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+
+      // Top Drivers by Trip Count - exclude soft-deleted
+      Driver.aggregate([
+        { $match: notDeletedFilter },
         { $sort: { tripCount: -1 } },
+        { $limit: 10 },
         {
           $project: {
             name: { $concat: ['$firstname', ' ', '$lastname'] },
@@ -96,10 +122,11 @@ const getDashboardAnalytics = async (req, res) => {
         }
       ]),
 
-      // Deployment Status Analysis
+      // Deployment Status Analysis - exclude soft-deleted
       Deployment.aggregate([
         {
           $match: {
+            ...notDeletedFilter,
             status: {
               $in: [
                 'completed',
@@ -115,11 +142,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]),
 
-      // Monthly Deployment Trends - Only completed and canceled status
+      // Monthly Deployment Trends - exclude soft-deleted
       Deployment.aggregate([
         {
           $match: {
-            status: { $in: ['completed', 'canceled'] } // Only completed and canceled
+            ...notDeletedFilter,
+            status: { $in: ['completed', 'canceled'] }
           }
         },
         {
@@ -127,7 +155,7 @@ const getDashboardAnalytics = async (req, res) => {
             _id: {
               year: { $year: '$createdAt' },
               month: { $month: '$createdAt' },
-              status: '$status' // Group by status as well
+              status: '$status'
             },
             count: { $sum: 1 }
           }
@@ -135,11 +163,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { '_id.year': 1, '_id.month': 1 } }
       ]),
 
-      // Monthly Sacks Analytics - Exclude canceled deployments
+      // Monthly Sacks Analytics - exclude soft-deleted and canceled
       Deployment.aggregate([
         {
           $match: {
-            status: { $ne: 'canceled' } // Exclude canceled deployments
+            ...notDeletedFilter,
+            status: { $ne: 'canceled' }
           }
         },
         {
@@ -155,11 +184,12 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { '_id.year': 1, '_id.month': 1 } }
       ]),
 
-      // Monthly Weight Analytics - Exclude canceled deployments
+      // Monthly Weight Analytics - exclude soft-deleted and canceled
       Deployment.aggregate([
         {
           $match: {
-            status: { $ne: 'canceled' } // Exclude canceled deployments
+            ...notDeletedFilter,
+            status: { $ne: 'canceled' }
           }
         },
         {
@@ -175,9 +205,14 @@ const getDashboardAnalytics = async (req, res) => {
         { $sort: { '_id.year': 1, '_id.month': 1 } }
       ]),
 
-      // Top Destinations
+      // Top Destinations - exclude soft-deleted
       Deployment.aggregate([
-        { $match: { destination: { $exists: true, $ne: '' } } },
+        {
+          $match: {
+            ...notDeletedFilter,
+            destination: { $exists: true, $ne: '' }
+          }
+        },
         {
           $group: {
             _id: '$destination',
@@ -188,13 +223,13 @@ const getDashboardAnalytics = async (req, res) => {
         { $limit: 10 }
       ]),
 
-      // Additional deployment status counts
-      Deployment.countDocuments({ status: 'pending' }),
-      Deployment.countDocuments({ status: 'preparing' })
+      // Additional deployment status counts - exclude soft-deleted
+      Deployment.countDocuments({ ...notDeletedFilter, status: 'pending' }),
+      Deployment.countDocuments({ ...notDeletedFilter, status: 'preparing' })
     ])
 
-    // Calculate additional metrics
-    const totalDeployments = await Deployment.countDocuments()
+    // Calculate additional metrics - exclude soft-deleted
+    const totalDeployments = await Deployment.countDocuments(notDeletedFilter)
     const completionRate =
       totalDeployments > 0
         ? ((completedDeployments / totalDeployments) * 100).toFixed(1)
@@ -205,23 +240,25 @@ const getDashboardAnalytics = async (req, res) => {
         ? ((cancelledDeployments / totalDeployments) * 100).toFixed(1)
         : 0
 
-    // Calculate active trucks (available + in-use)
+    // Calculate active trucks (available + deployed) - exclude soft-deleted
     const activeTrucks = await Truck.countDocuments({
-      status: { $in: ['available', 'in-use'] }
+      ...notDeletedFilter,
+      status: { $in: ['available', 'deployed'] }
     })
 
-    // CORRECTED: Calculate success rate (only count finalized deployments)
+    // Calculate success rate (only count finalized deployments)
     const finalizedDeployments = completedDeployments + cancelledDeployments
     const successRate =
       finalizedDeployments > 0
         ? ((completedDeployments / finalizedDeployments) * 100).toFixed(1)
         : 0
 
-    // Calculate total sacks and weight across all deployments (excluding canceled)
+    // Calculate total sacks and weight - exclude soft-deleted and canceled
     const totalSacksResult = await Deployment.aggregate([
       {
         $match: {
-          status: { $ne: 'canceled' } // Exclude canceled deployments
+          ...notDeletedFilter,
+          status: { $ne: 'canceled' }
         }
       },
       {

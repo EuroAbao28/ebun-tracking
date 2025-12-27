@@ -64,7 +64,8 @@ const createDeployment = async (req, res, next) => {
       pickupIn: pickupIn || '',
       pickupOut: pickupOut || '',
       destArrival: destArrival || '',
-      destDeparture: destDeparture || ''
+      destDeparture: destDeparture || '',
+      isSoftDeleted: false
     })
 
     // Update truck and driver status
@@ -124,13 +125,18 @@ const getAllDeployments = async (req, res, next) => {
       assignedAt,
       departedAt,
       perPage = 50,
-      page = 1
+      page = 1,
+      includeDeleted = false
     } = req.query
 
     console.log(req.query)
 
     // Build base query
     let baseQuery = Deployment.find()
+
+    if (includeDeleted !== 'true') {
+      baseQuery = baseQuery.where('isSoftDeleted').ne(true)
+    }
 
     // Status filter
     if (status && status !== '') {
@@ -248,6 +254,11 @@ const getAllDeployments = async (req, res, next) => {
 
     // Get total count (should match the filters)
     let totalQuery = Deployment.find()
+
+    if (includeDeleted !== 'true') {
+      totalQuery = totalQuery.where('isSoftDeleted').ne(true)
+    }
+
     if (status && status !== '') {
       totalQuery = totalQuery.where('status').equals(status)
     }
@@ -311,7 +322,11 @@ const updateDeployment = async (req, res, next) => {
     }
 
     // Find deployment
-    const existingDeployment = await Deployment.findById(id)
+    const existingDeployment = await Deployment.findOne({
+      _id: id,
+      isSoftDeleted: { $ne: true }
+    })
+
     if (!existingDeployment) {
       return next(createError(404, 'Deployment not found'))
     }
@@ -845,8 +860,69 @@ const updateDeployment = async (req, res, next) => {
   }
 }
 
+// delete deployment
+const softDeleteDeployment = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    // Check permissions
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
+
+    // Find deployment - exclude already soft deleted
+    const deployment = await Deployment.findOne({
+      _id: id,
+      isSoftDeleted: { $ne: true }
+    })
+
+    if (!deployment) {
+      return next(createError(404, 'Deployment not found'))
+    }
+
+    // Determine active resources
+    const activeTruckId =
+      deployment.replacement?.replacementTruckId || deployment.truckId
+    const activeDriverId =
+      deployment.replacement?.replacementDriverId || deployment.driverId
+
+    const updates = []
+    if (activeTruckId) {
+      updates.push(
+        Truck.findByIdAndUpdate(activeTruckId, { status: 'available' })
+      )
+    }
+    if (activeDriverId) {
+      updates.push(
+        Driver.findByIdAndUpdate(activeDriverId, { status: 'available' })
+      )
+    }
+    await Promise.all(updates)
+
+    // Soft delete the deployment
+    deployment.isSoftDeleted = true
+    await deployment.save()
+
+    // Create activity log
+    await ActivityLog.create({
+      type: 'deployment',
+      performedBy: req.user._id,
+      action: `${deployment.deploymentCode}: Deployment deleted`,
+      targetDeployment: deployment._id
+    })
+
+    res.status(200).json({
+      message: 'Deployment deleted successfully',
+      deploymentCode: deployment.deploymentCode
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
   createDeployment,
   getAllDeployments,
-  updateDeployment
+  updateDeployment,
+  softDeleteDeployment
 }

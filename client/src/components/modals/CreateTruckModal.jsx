@@ -236,6 +236,7 @@ function CreateTruckModal ({ isOpen, onClose, onCreate, allTools }) {
                   value={formData.maxLoad}
                   formatNumber={true}
                   onChange={handleChange}
+                  isRequired={false}
                 />
 
                 <div className='mt-12 col-span-full'>
@@ -271,11 +272,11 @@ const InputField = ({
   type,
   name,
   placeholder,
+  plateNoMaxLength,
   value,
   onChange,
   disabled,
   isRequired = true,
-  isCapitalize = true,
   isUppercase = false,
   // New props for number formatting
   formatNumber = false,
@@ -323,7 +324,7 @@ const InputField = ({
         placeholder={placeholder}
         value={value}
         minLength={2}
-        maxLength={30}
+        maxLength={plateNoMaxLength || 30}
         onChange={onChange}
         disabled={disabled}
         required={isRequired}

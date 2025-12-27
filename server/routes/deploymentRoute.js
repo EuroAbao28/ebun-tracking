@@ -3,7 +3,8 @@ const authenticateToken = require('../middlewares/auth')
 const {
   createDeployment,
   getAllDeployments,
-  updateDeployment
+  updateDeployment,
+  softDeleteDeployment
 } = require('../controllers/deploymentController')
 
 const router = express.Router()
@@ -14,5 +15,7 @@ router
   .get(authenticateToken, getAllDeployments)
 
 router.route('/:id').patch(authenticateToken, updateDeployment)
+
+router.route('/soft-delete/:id').delete(authenticateToken, softDeleteDeployment)
 
 module.exports = router

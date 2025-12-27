@@ -79,6 +79,10 @@ const deploymentSchema = new mongoose.Schema(
     destDeparture: {
       type: String,
       default: ''
+    },
+    isSoftDeleted: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }
