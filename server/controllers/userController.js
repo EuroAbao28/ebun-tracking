@@ -543,8 +543,8 @@ const updateUser = async (req, res, next) => {
 
     // Check permissions
     if (
-      req.user.role !== 'head_admin' &&
-      req.user.role !== 'admin' &&
+      req.user.role !== 'head_admin' ||
+      req.user.role !== 'admin' ||
       req.user.role !== 'visitor'
     ) {
       return next(createError(403, 'Access denied'))
