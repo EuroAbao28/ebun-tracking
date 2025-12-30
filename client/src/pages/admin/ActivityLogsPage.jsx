@@ -61,11 +61,6 @@ function ActivityLogsPage () {
     }
   }
 
-  const handleClearSearch = () => {
-    setTempFilters(prev => ({ ...prev, search: '' }))
-    setFilters(prev => ({ ...prev, search: '' }))
-  }
-
   const handleChangePage = direction => {
     if (direction === 'prev' && filters.page > 1) {
       setFilters(prev => ({ ...prev, page: prev.page - 1 }))
@@ -279,7 +274,7 @@ function ActivityLogsPage () {
                     <td className='capitalize'>
                       {activityLog.performedBy.role.replace(/_/g, ' ')}
                     </td>
-                    <td className='capitalize'>
+                    <td className='capitalize  max-w-42'>
                       {`${activityLog.performedBy.firstname} ${activityLog.performedBy.lastname}`}
                     </td>
                     <td>{activityLog.action}</td>

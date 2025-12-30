@@ -32,7 +32,7 @@ const hasInvalidChars = input => {
     /<\/?object/i, // Object tags
     /<\/?embed/i, // Embed tags
     /data:/i, // Data URLs
-    /vbscript:/i // VBScript
+    /vbscript:/i // VBScriptp
   ]
 
   return dangerousPatterns.some(pattern => pattern.test(input))
@@ -86,6 +86,10 @@ const createUser = async (req, res, next) => {
 
     if (role === 'admin' || role === 'head_admin')
       return next(createError(400, 'Invalid role type'))
+
+    if (status !== 'pending') {
+      return next(createError(400, 'Invalid status'))
+    }
 
     // validate if password match
     if (password !== confirmPassword) {
@@ -547,11 +551,14 @@ const updateUser = async (req, res, next) => {
       req.user.role !== 'admin' &&
       req.user.role !== 'visitor'
     ) {
-      return next(createError(403, 'Access denied a'))
+      return next(createError(403, 'Access denied'))
     }
 
-    if (id.toString() !== req.user._id.toString()) {
-      return next(createError(403, 'Access denied b'))
+    if (
+      id.toString() !== req.user._id.toString() &&
+      (req.user.role !== 'head_admin' || req.user.role !== 'admin')
+    ) {
+      return next(createError(403, 'Access denied'))
     }
 
     // Track if status is being changed
