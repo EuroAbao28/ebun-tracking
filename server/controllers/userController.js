@@ -539,26 +539,19 @@ const updateUser = async (req, res, next) => {
 
     console.log('Update request body:', req.body)
 
+    // Check permissions
+    if (!['head_admin', 'admin'].includes(req.user.role)) {
+      return next(createError(403, 'Access denied'))
+    }
+
+    if (req.user.role === 'admin' && existingUser.role !== 'visitor') {
+      return next(createError(403, 'Access denied'))
+    }
+
     // find the user
     const existingUser = await User.findById(id)
     if (!existingUser) {
       return next(createError(404, 'User not found'))
-    }
-
-    // Check permissions
-    if (
-      req.user.role !== 'head_admin' &&
-      req.user.role !== 'admin' &&
-      req.user.role !== 'visitor'
-    ) {
-      return next(createError(403, 'Access denied'))
-    }
-
-    if (
-      id.toString() !== req.user._id.toString() &&
-      (req.user.role !== 'head_admin' || req.user.role !== 'admin')
-    ) {
-      return next(createError(403, 'Access denied'))
     }
 
     // Track if status is being changed

@@ -55,7 +55,6 @@ function Deployments () {
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(null)
   const [totalPages, setTotalPages] = useState(null)
-  const [error, setError] = useState(null)
   const [selectedDeployment, setSelectedDeployment] = useState({})
 
   // Initialize with defaultFilters
@@ -263,6 +262,7 @@ function Deployments () {
                 </div>
               </div>
             </div>
+
             {/* search */}
             <form
               onSubmit={handleApplyFilters}
@@ -292,6 +292,7 @@ function Deployments () {
                 <IoClose className='text-xl' />
               </button>
             </form>
+
             {/* pagination */}
             <div className='flex gap-4 items-center outline outline-gray-200 rounded'>
               <button
@@ -316,6 +317,7 @@ function Deployments () {
                 <MdOutlineKeyboardArrowRight />
               </button>
             </div>
+
             {/* create button */}
             {['head_admin', 'admin'].includes(userData.data.role) && (
               <button
@@ -613,7 +615,7 @@ function Deployments () {
         openDeleteModal={() => setIsDeleteDeploymentModalOpen(true)}
         openReplacementModal={() => setIsReplacementModalOpen(true)}
         openReplacementHistory={() => setShowReplacementHistory(true)}
-        updatable={true}
+        updatable={['head_admin', 'admin'].includes(userData.data.role)}
       />
 
       <CreateDeploymentModal
