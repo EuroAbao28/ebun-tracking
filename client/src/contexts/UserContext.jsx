@@ -18,6 +18,8 @@ export const UserProvider = ({ children }) => {
   const getCurrentUser = async () => {
     const token = sessionStorage.getItem('userToken')
 
+    setUserData(prev => ({ ...prev, isLoading: true }))
+
     try {
       const response = await axios.get(`${API_USER}/current-user`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -31,6 +33,7 @@ export const UserProvider = ({ children }) => {
       })
     } catch (error) {
       console.log(error)
+      setUserData(prev => ({ ...prev, isLoading: false, error: error.message }))
       toast.error(error.response.data.message || 'Authentication Failed')
       navigate('/')
     }
@@ -40,7 +43,8 @@ export const UserProvider = ({ children }) => {
     console.log('Updating user with:', updatedUser)
     setUserData(prev => ({
       ...prev,
-      data: { ...prev.data, ...updatedUser }
+      data: { ...prev.data, ...updatedUser },
+      isLoading: false
     }))
   }
 

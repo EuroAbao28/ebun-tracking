@@ -12,13 +12,14 @@ import { toast } from 'react-toastify'
 function MyProfile () {
   const { updateUserFunction, isLoading } = useUpdateUser()
   const { userData, updateUser } = useUserContext()
+  const userLoading = userData.isLoading
 
   const [isEditMode, setIsEditMode] = useState(false)
   const [editForm, setEditForm] = useState({})
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewImage, setPreviewImage] = useState(null)
 
-  const user = userData?.data || {}
+  const user = userData?.data
 
   const handleChange = e => {
     const { name, value } = e.target
@@ -77,6 +78,19 @@ function MyProfile () {
       setPreviewImage(null)
     }
   }, [user])
+
+  if (userLoading) {
+    return (
+      <div className='flex-1 flex items-center justify-center'>
+        <div className='flex flex-col items-center justify-center gap-4 text-center'>
+          <div className='relative'>
+            <span className='loading loading-spinner loading-lg text-primaryColor'></span>
+          </div>
+          <p className='text-gray-600 font-medium'>Loading content...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
