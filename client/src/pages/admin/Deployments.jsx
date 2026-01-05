@@ -3,7 +3,7 @@ import DeploymentDetailsModal from '../../components/modals/DeploymentDetailsMod
 import CreateDeploymentModal from '../../components/modals/CreateDeploymentModal'
 import useGetAllTruck from '../../hooks/useGetAllTruck'
 import useGetAllDriver from '../../hooks/useGetAllDriver'
-import { FaFilter, FaPlus, FaSearch } from 'react-icons/fa'
+import { FaFilter, FaPlus, FaSearch, FaFileExport } from 'react-icons/fa'
 import { DEPLOYMENT_STATUS } from '../../utils/generalOptions'
 import { IoClose } from 'react-icons/io5'
 import {
@@ -93,6 +93,110 @@ function Deployments () {
     } else if (direction === 'next' && filters.page < totalPages) {
       setFilters(prev => ({ ...prev, page: prev.page + 1 }))
     }
+  }
+
+  const handleExportToCSV = () => {
+    if (!allDeployments || allDeployments.length === 0) {
+      alert('No data to export')
+      return
+    }
+
+    // Define CSV headers
+    const headers = [
+      'No.',
+      'Code',
+      'Plate No',
+      'Truck Type',
+      'Driver Name',
+      'Destination',
+      'Status',
+      'Departed',
+      'Pick-up In',
+      'Pick-up Out',
+      'Dest. Arrival',
+      'Dest. Departure',
+      'Unloading Time'
+    ]
+
+    // Convert deployments to CSV rows
+    const rows = allDeployments.map((deployment, index) => {
+      const plateNo = deployment?.replacement?.replacementTruckId?._id
+        ? deployment.replacement.replacementTruckId.plateNo
+        : deployment.truckId.plateNo
+
+      const truckType = deployment?.replacement?.replacementTruckId?._id
+        ? deployment.replacement.replacementTruckType
+        : deployment.truckType
+
+      const driverName = deployment?.replacement?.replacementTruckId?._id
+        ? `${deployment.replacement.replacementDriverId.firstname} ${deployment.replacement.replacementDriverId.lastname}`
+        : `${deployment.driverId.firstname} ${deployment.driverId.lastname}`
+
+      const formatDateTime = dateStr => {
+        if (!dateStr) return 'Pending'
+        return DateTime.fromISO(dateStr)
+          .setZone('Asia/Manila')
+          .toFormat('MMM d, yyyy hh:mm a')
+      }
+
+      const calculateUnloadingTime = () => {
+        if (deployment.destArrival && deployment.destDeparture) {
+          const { hours, minutes } = DateTime.fromISO(
+            deployment.destDeparture
+          ).diff(DateTime.fromISO(deployment.destArrival), ['hours', 'minutes'])
+          return hours
+            ? `${hours}h ${Math.floor(minutes)}m`
+            : `${Math.floor(minutes)}m`
+        }
+        return 'Pending'
+      }
+
+      return [
+        (filters.page - 1) * filters.perPage + index + 1,
+        deployment.deploymentCode,
+        plateNo.toUpperCase(),
+        truckType,
+        driverName,
+        deployment.destination,
+        deployment.status,
+        deployment.status === 'canceled'
+          ? 'Canceled'
+          : formatDateTime(deployment.departed),
+        deployment.status === 'canceled'
+          ? 'Canceled'
+          : formatDateTime(deployment.pickupIn),
+        deployment.status === 'canceled'
+          ? 'Canceled'
+          : formatDateTime(deployment.pickupOut),
+        deployment.status === 'canceled'
+          ? 'Canceled'
+          : formatDateTime(deployment.destArrival),
+        deployment.status === 'canceled'
+          ? 'Canceled'
+          : formatDateTime(deployment.destDeparture),
+        deployment.status === 'canceled' ? 'Canceled' : calculateUnloadingTime()
+      ]
+    })
+
+    // Create CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+
+    const timestamp = DateTime.now().toFormat('yyyy-MM-dd_HHmmss')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `deployments_export_${timestamp}.csv`)
+    link.style.visibility = 'hidden'
+
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const handleAddNewDeployment = newDeployment => {
@@ -317,6 +421,16 @@ function Deployments () {
                 <MdOutlineKeyboardArrowRight />
               </button>
             </div>
+
+            {/* export button */}
+            <button
+              onClick={handleExportToCSV}
+              disabled={isDeploymentLoading || allDeployments.length === 0}
+              className='flex items-center gap-4 bg-linear-to-b from-blue-500 to-blue-600 text-white rounded px-3 py-1 cursor-pointer active:scale-95 transition-all hover:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed'
+            >
+              <FaFileExport className='text-sm' />
+              <p>Export</p>
+            </button>
 
             {/* create button */}
             {['head_admin', 'admin'].includes(userData.data.role) && (

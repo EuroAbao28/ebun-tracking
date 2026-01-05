@@ -329,7 +329,7 @@ function CalendarPage () {
           </div>
 
           <div
-            className='space-y-1 max-h-48 overflow-y-auto scrollbar-thin p-1'
+            className='space-y-1 h-48 overflow-y-auto scrollbar-thin p-1'
             onClick={e => e.stopPropagation()}
           >
             {dayEvents.map(event => (
