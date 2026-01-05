@@ -23,6 +23,7 @@ import {
 } from 'react-icons/hi'
 import { TbRocket, TbChecklist, TbRefresh, TbX } from 'react-icons/tb'
 import { error_illustration } from '../../consts/images'
+import { useUserContext } from '../../contexts/UserContext'
 
 // Register Chart.js components
 ChartJS.register(
@@ -39,6 +40,8 @@ ChartJS.register(
 )
 
 const Dashboard = () => {
+  const { userData } = useUserContext()
+
   const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -485,7 +488,7 @@ const Dashboard = () => {
     }
   }
 
-  if (loading) {
+  if (loading || userData.isLoading) {
     return (
       <div className='flex-1 flex items-center justify-center'>
         <div className='flex flex-col items-center justify-center gap-4 text-center'>
@@ -497,6 +500,8 @@ const Dashboard = () => {
       </div>
     )
   }
+
+  console.log(userData)
 
   if (error) {
     return (
@@ -694,20 +699,22 @@ const Dashboard = () => {
           </div>
 
           {/* Combined Line Chart - Sacks & Weight */}
-          <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
-            <h2 className='text-xl font-semibold text-gray-700 mb-4'>
-              Cargo Volume & Weight Trends
-            </h2>
-            <p className='text-gray-500 text-sm mb-4'>
-              Sacks count and weight transported
-            </p>
-            <div className='h-80'>
-              <Line
-                data={getCargoVolumeData()}
-                options={dualAxisLineChartOptions}
-              />
+          {['head_admin', 'admin'].includes(userData.data.role) && (
+            <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
+              <h2 className='text-xl font-semibold text-gray-700 mb-4'>
+                Cargo Volume & Weight Trends
+              </h2>
+              <p className='text-gray-500 text-sm mb-4'>
+                Sacks count and weight transported
+              </p>
+              <div className='h-80'>
+                <Line
+                  data={getCargoVolumeData()}
+                  options={dualAxisLineChartOptions}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Bar Chart - Deployment Status */}
           <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
@@ -728,94 +735,104 @@ const Dashboard = () => {
           </div>
 
           {/* Bar Chart - Destinations */}
-          <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
-            <h2 className='text-xl font-semibold text-gray-700 mb-4'>
-              Top Destinations
-            </h2>
-            <p className='text-gray-500 text-sm mb-4'>
-              Most frequent deployment locations
-            </p>
-            <div className='h-80'>
-              <Bar
-                data={getBarChartData(
-                  analytics.charts.destinations,
-                  'Trips',
-                  1
-                )}
-                options={chartOptions}
-              />
-            </div>
-          </div>
-
-          <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 col-span-full'>
-            {/* Bar Chart - Truck Types */}
+          {['head_admin', 'admin'].includes(userData.data.role) && (
             <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
               <h2 className='text-xl font-semibold text-gray-700 mb-4'>
-                Truck Types
+                Top Destinations
               </h2>
               <p className='text-gray-500 text-sm mb-4'>
-                Fleet composition by type
+                Most frequent deployment locations
               </p>
               <div className='h-80'>
                 <Bar
                   data={getBarChartData(
-                    analytics.charts.truckTypes,
-                    'Trucks',
-                    2
+                    analytics.charts.destinations,
+                    'Trips',
+                    1
                   )}
                   options={chartOptions}
                 />
               </div>
             </div>
+          )}
 
-            {/* Pie Chart - Truck Status */}
-            <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
-              <h2 className='text-xl font-semibold text-gray-700 mb-4'>
-                Truck Status
-              </h2>
-              <p className='text-gray-500 text-sm mb-4'>
-                Operational status distribution
-              </p>
-              <div className='h-80'>
-                <Pie
-                  data={getPieChartData(analytics.charts.truckStatus)}
-                  options={pieChartOptions}
-                />
+          {/* truck types */}
+          {['head_admin', 'admin'].includes(userData.data.role) && (
+            <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 col-span-full'>
+              {/* Bar Chart - Truck Types */}
+              <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
+                <h2 className='text-xl font-semibold text-gray-700 mb-4'>
+                  Truck Types
+                </h2>
+                <p className='text-gray-500 text-sm mb-4'>
+                  Fleet composition by type
+                </p>
+                <div className='h-80'>
+                  <Bar
+                    data={getBarChartData(
+                      analytics.charts.truckTypes,
+                      'Trucks',
+                      2
+                    )}
+                    options={chartOptions}
+                  />
+                </div>
+              </div>
+
+              {/* Pie Chart - Truck Status */}
+              <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
+                <h2 className='text-xl font-semibold text-gray-700 mb-4'>
+                  Truck Status
+                </h2>
+                <p className='text-gray-500 text-sm mb-4'>
+                  Operational status distribution
+                </p>
+                <div className='h-80'>
+                  <Pie
+                    data={getPieChartData(analytics.charts.truckStatus)}
+                    options={pieChartOptions}
+                  />
+                </div>
+              </div>
+
+              {/* Pie Chart - Driver Status */}
+              <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
+                <h2 className='text-xl font-semibold text-gray-700 mb-4'>
+                  Driver Status
+                </h2>
+                <p className='text-gray-500 text-sm mb-4'>
+                  Current driver availability
+                </p>
+                <div className='h-80'>
+                  <Doughnut
+                    data={getPieChartData(analytics.charts.driverStatus)}
+                    options={pieChartOptions}
+                  />
+                </div>
               </div>
             </div>
-
-            {/* Pie Chart - Driver Status */}
-            <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
-              <h2 className='text-xl font-semibold text-gray-700 mb-4'>
-                Driver Status
-              </h2>
-              <p className='text-gray-500 text-sm mb-4'>
-                Current driver availability
-              </p>
-              <div className='h-80'>
-                <Doughnut
-                  data={getPieChartData(analytics.charts.driverStatus)}
-                  options={pieChartOptions}
-                />
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* All Drivers - Horizontal Bar Chart */}
-        <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
-          <h2 className='text-xl font-semibold text-gray-700 mb-4'>
-            All Drivers Performance
-          </h2>
-          <p className='text-gray-500 text-sm mb-4'>
-            Ranked by completed trips
-          </p>
-          <div className='h-96'>
-            {' '}
-            {/* Increased height to show more drivers */}
-            <Bar data={getAllDriversBarData()} options={horizontalBarOptions} />
+        {['head_admin', 'admin'].includes(userData.data.role) && (
+          <div className='bg-white p-6 rounded shadow-card3 border border-gray-200'>
+            <h2 className='text-xl font-semibold text-gray-700 mb-4'>
+              All Drivers Performance
+            </h2>
+            <p className='text-gray-500 text-sm mb-4'>
+              Ranked by completed trips
+            </p>
+            <div className='h-96'>
+              {' '}
+              {/* Increased height to show more drivers */}
+              <Bar
+                data={getAllDriversBarData()}
+                options={horizontalBarOptions}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
