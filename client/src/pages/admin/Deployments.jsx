@@ -26,7 +26,7 @@ const defaultFilters = {
   assignedAt: '',
   departedAt: '',
   search: '',
-  perPage: 50,
+  perPage: 100,
   page: 1
 }
 
@@ -101,6 +101,83 @@ function Deployments () {
       return
     }
 
+    // Helper function to capitalize words
+    const capitalizeWords = str => {
+      if (!str) return ''
+      return str
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    }
+
+    // Helper function to format truck type
+    const formatTruckType = type => {
+      if (!type) return ''
+
+      // Handle common truck type formats
+      const typeMappings = {
+        elf: 'ELF',
+        'single-tire': 'Single-Tire',
+        forward: 'Forward',
+        'wing-van': 'Wing Van',
+        'closed-van': 'Closed Van',
+        '10-wheeler': '10 Wheeler',
+        '6-wheeler': '6 Wheeler'
+      }
+
+      const lowerType = type.toLowerCase().trim()
+      return typeMappings[lowerType] || capitalizeWords(type.replace(/-/g, ' '))
+    }
+
+    // Custom 12-hour time formatter
+    const formatDateTime = dateStr => {
+      if (!dateStr || dateStr === 'Pending') return 'Pending'
+
+      try {
+        const date = DateTime.fromISO(dateStr).setZone('Asia/Manila')
+
+        // Extract components for manual formatting
+        const month = date.toFormat('MMM') // Dec, Jan, etc.
+        const day = date.day
+        const year = date.year
+        const hour = date.hour
+        const minute = date.minute.toString().padStart(2, '0')
+
+        // Convert to 12-hour format
+        const period = hour >= 12 ? 'PM' : 'AM'
+        const hour12 = hour % 12 || 12 // Convert 0 to 12 for 12 AM
+
+        // Format: "Dec 27, 2025 2:21 PM"
+        return `${month} ${day}, ${year} ${hour12}:${minute} ${period}`
+      } catch (error) {
+        console.error('Error formatting date:', dateStr, error)
+        return 'Invalid Date'
+      }
+    }
+
+    // Calculate unloading time
+    const calculateUnloadingTime = (destArrival, destDeparture) => {
+      if (!destArrival || !destDeparture) return 'Pending'
+
+      try {
+        const arrival = DateTime.fromISO(destArrival)
+        const departure = DateTime.fromISO(destDeparture)
+        const { hours, minutes } = departure.diff(arrival, ['hours', 'minutes'])
+
+        if (hours === 0) {
+          return `${Math.floor(minutes)}m`
+        } else if (minutes < 1) {
+          return `${hours}h`
+        } else {
+          return `${hours}h ${Math.floor(minutes)}m`
+        }
+      } catch (error) {
+        console.error('Error calculating unloading time:', error)
+        return 'Error'
+      }
+    }
+
     // Define CSV headers
     const headers = [
       'No.',
@@ -120,72 +197,102 @@ function Deployments () {
 
     // Convert deployments to CSV rows
     const rows = allDeployments.map((deployment, index) => {
-      const plateNo = deployment?.replacement?.replacementTruckId?._id
-        ? deployment.replacement.replacementTruckId.plateNo
-        : deployment.truckId.plateNo
+      // Determine if replacement data should be used
+      const isReplacement = deployment?.replacement?.replacementTruckId?._id
+      const replacement = deployment?.replacement
 
-      const truckType = deployment?.replacement?.replacementTruckId?._id
-        ? deployment.replacement.replacementTruckType
+      // Get plate number
+      const plateNo = isReplacement
+        ? replacement.replacementTruckId?.plateNo || ''
+        : deployment.truckId?.plateNo || ''
+
+      // Get truck type
+      const truckType = isReplacement
+        ? replacement.replacementTruckType
         : deployment.truckType
 
-      const driverName = deployment?.replacement?.replacementTruckId?._id
-        ? `${deployment.replacement.replacementDriverId.firstname} ${deployment.replacement.replacementDriverId.lastname}`
-        : `${deployment.driverId.firstname} ${deployment.driverId.lastname}`
+      // Get driver name
+      const driverObj = isReplacement
+        ? replacement.replacementDriverId
+        : deployment.driverId
 
-      const formatDateTime = dateStr => {
-        if (!dateStr) return 'Pending'
-        return DateTime.fromISO(dateStr)
-          .setZone('Asia/Manila')
-          .toFormat('MMM d, yyyy hh:mm a')
+      const driverName = driverObj
+        ? `${capitalizeWords(driverObj.firstname)} ${capitalizeWords(
+            driverObj.lastname
+          )}`
+        : ''
+
+      // Format status
+      const status = deployment.status
+        ? deployment.status === 'ongoing'
+          ? 'Ongoing'
+          : capitalizeWords(deployment.status)
+        : ''
+
+      // Format destination - preserve existing case for company names
+      const destination = deployment.destination || ''
+
+      // Handle canceled status - all fields show "Canceled"
+      if (deployment.status === 'canceled') {
+        return [
+          (filters.page - 1) * filters.perPage + index + 1,
+          deployment.deploymentCode || '',
+          plateNo.toUpperCase(),
+          formatTruckType(truckType),
+          driverName,
+          destination,
+          'Canceled',
+          'Canceled',
+          'Canceled',
+          'Canceled',
+          'Canceled',
+          'Canceled',
+          'Canceled'
+        ]
       }
 
-      const calculateUnloadingTime = () => {
-        if (deployment.destArrival && deployment.destDeparture) {
-          const { hours, minutes } = DateTime.fromISO(
-            deployment.destDeparture
-          ).diff(DateTime.fromISO(deployment.destArrival), ['hours', 'minutes'])
-          return hours
-            ? `${hours}h ${Math.floor(minutes)}m`
-            : `${Math.floor(minutes)}m`
-        }
-        return 'Pending'
-      }
-
+      // For non-canceled deployments
       return [
         (filters.page - 1) * filters.perPage + index + 1,
-        deployment.deploymentCode,
+        deployment.deploymentCode || '',
         plateNo.toUpperCase(),
-        truckType,
+        formatTruckType(truckType),
         driverName,
-        deployment.destination,
-        deployment.status,
-        deployment.status === 'canceled'
-          ? 'Canceled'
-          : formatDateTime(deployment.departed),
-        deployment.status === 'canceled'
-          ? 'Canceled'
-          : formatDateTime(deployment.pickupIn),
-        deployment.status === 'canceled'
-          ? 'Canceled'
-          : formatDateTime(deployment.pickupOut),
-        deployment.status === 'canceled'
-          ? 'Canceled'
-          : formatDateTime(deployment.destArrival),
-        deployment.status === 'canceled'
-          ? 'Canceled'
-          : formatDateTime(deployment.destDeparture),
-        deployment.status === 'canceled' ? 'Canceled' : calculateUnloadingTime()
+        destination,
+        status,
+        formatDateTime(deployment.departed),
+        formatDateTime(deployment.pickupIn),
+        formatDateTime(deployment.pickupOut),
+        formatDateTime(deployment.destArrival),
+        formatDateTime(deployment.destDeparture),
+        calculateUnloadingTime(deployment.destArrival, deployment.destDeparture)
       ]
     })
 
-    // Create CSV content
+    // Create CSV content with proper escaping
+    const escapeCSV = cell => {
+      if (cell == null || cell === undefined) return '""'
+      const stringCell = String(cell)
+      // Escape quotes and wrap in quotes if contains comma, quote, or newline
+      if (
+        stringCell.includes(',') ||
+        stringCell.includes('"') ||
+        stringCell.includes('\n')
+      ) {
+        return `"${stringCell.replace(/"/g, '""')}"`
+      }
+      return stringCell
+    }
+
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ...rows.map(row => row.map(escapeCSV).join(','))
     ].join('\n')
 
     // Create blob and download
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['\ufeff' + csvContent], {
+      type: 'text/csv;charset=utf-8;'
+    })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
 
@@ -197,6 +304,7 @@ function Deployments () {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   const handleAddNewDeployment = newDeployment => {

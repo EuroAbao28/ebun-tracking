@@ -306,6 +306,7 @@ function TruckDetailsModal ({
                     disabled={!isEditMode}
                     formatNumber={true}
                     onChange={handleChange}
+                    isRequired={false}
                   />
 
                   <div className='col-span-full flex gap-6 border-t-2 border-dashed border-gray-100 mt-6 pt-6 transition-all'>

@@ -124,7 +124,7 @@ const getAllDeployments = async (req, res, next) => {
       sort = 'latest',
       assignedAt,
       departedAt,
-      perPage = 50,
+      perPage = 100,
       page = 1,
       includeDeleted = false
     } = req.query

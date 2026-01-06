@@ -1308,7 +1308,7 @@ function DeploymentDetailsModal ({
                         onChange={handleChange}
                         formatNumber={true}
                         thousandSeparator={true}
-                        decimalScale={0}
+                        decimalScale={2}
                       />
                     </div>
 
