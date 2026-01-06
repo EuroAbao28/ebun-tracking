@@ -11,6 +11,7 @@ import signup_bg from '../assets/signup_bg.jpg'
 import no_image from '../assets/no_image.png'
 import ebun_logo_light from '../assets/ebun_logo_light.png'
 import ebun_logo_dark from '../assets/ebun_logo_dark.png'
+import truck_icon from '../assets/truck_icon.png'
 
 export {
   logo,
@@ -25,5 +26,6 @@ export {
   signup_bg,
   no_image,
   ebun_logo_light,
-  ebun_logo_dark
+  ebun_logo_dark,
+  truck_icon
 }

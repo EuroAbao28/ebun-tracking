@@ -225,49 +225,52 @@ function MyProfile () {
               </p>
             </label>
           </div>
-          <div className='flex gap-4 col-span-full mt-4'>
-            {isEditMode ? (
-              <>
-                <button
-                  type='button'
-                  onClick={handleCancelEditMode}
-                  disabled={isLoading}
-                  className='bg-linear-to-b from-gray-100 to-gray-200 text-gray-600  px-8 py-2 uppercase text-sm font-semibold rounded flex items-center gap-2 cursor-pointer active:scale-95 transition-all hover:brightness-95'
-                >
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  disabled={isLoading}
-                  className='bg-linear-to-b from-emerald-500 to-emerald-600 text-white px-8 py-2 uppercase text-sm font-semibold rounded flex justify-center items-center gap-2 cursor-pointer active:scale-95 transition-all hover:brightness-95'
-                >
-                  {isLoading ? (
-                    <>
-                      <span className='loading loading-spinner loading-xs'></span>
-                      Saving
-                    </>
-                  ) : (
-                    <>
-                      <FaSave className='text-base -mt-0.5' />
-                      Save
-                    </>
-                  )}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type='button'
-                  onClick={() => setIsEditMode(true)}
-                  disabled={isLoading}
-                  className='bg-linear-to-b from-blue-500 to-blue-600 text-white px-8 py-2 uppercase text-sm font-semibold rounded flex items-center gap-2 cursor-pointer active:scale-95 transition-all hover:brightness-95'
-                >
-                  <FaUserEdit className='text-base -mt-0.5' />
-                  Edit
-                </button>
-              </>
-            )}
-          </div>
+
+          {['head_admin', 'admin'].includes(user.role) && (
+            <div className='flex gap-4 col-span-full mt-4'>
+              {isEditMode ? (
+                <>
+                  <button
+                    type='button'
+                    onClick={handleCancelEditMode}
+                    disabled={isLoading}
+                    className='bg-linear-to-b from-gray-100 to-gray-200 text-gray-600  px-8 py-2 uppercase text-sm font-semibold rounded flex items-center gap-2 cursor-pointer active:scale-95 transition-all hover:brightness-95'
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type='submit'
+                    disabled={isLoading}
+                    className='bg-linear-to-b from-emerald-500 to-emerald-600 text-white px-8 py-2 uppercase text-sm font-semibold rounded flex justify-center items-center gap-2 cursor-pointer active:scale-95 transition-all hover:brightness-95'
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className='loading loading-spinner loading-xs'></span>
+                        Saving
+                      </>
+                    ) : (
+                      <>
+                        <FaSave className='text-base -mt-0.5' />
+                        Save
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type='button'
+                    onClick={() => setIsEditMode(true)}
+                    disabled={isLoading}
+                    className='bg-linear-to-b from-blue-500 to-blue-600 text-white px-8 py-2 uppercase text-sm font-semibold rounded flex items-center gap-2 cursor-pointer active:scale-95 transition-all hover:brightness-95'
+                  >
+                    <FaUserEdit className='text-base -mt-0.5' />
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </form>
     </div>

@@ -18,11 +18,13 @@ import ReplacementModal from '../../components/modals/ReplacementModal'
 import ReplacementHistoryModal from '../../components/modals/ReplacementHistoryModal'
 import { useUserContext } from '../../contexts/UserContext'
 import DeleteDeploymentModal from '../../components/modals/DeleteDeploymentModal'
+import { CLIENT_COMPANY } from '../../utils/deploymentOptions'
 
 // Add defaultFilters constant
 const defaultFilters = {
   status: '',
   sort: 'latest',
+  requestFrom: '',
   assignedAt: '',
   departedAt: '',
   search: '',
@@ -431,6 +433,22 @@ function Deployments () {
                     >
                       <option value='latest'>Latest</option>
                       <option value='oldest'>Oldest</option>
+                    </select>
+                  </label>
+
+                  <label className='col-span-2 flex items-center text-sm outline outline-gray-200 rounded py-2 px-3 gap-6'>
+                    <p className='font-semibold text-nowrap'>Request From</p>
+                    <select
+                      name='sort'
+                      value={tempFilters.sort}
+                      onChange={handleChangeFilter}
+                      className='w-full focus:outline-none'
+                    >
+                      {CLIENT_COMPANY.map((item, index) => (
+                        <option key={index} value={item}>
+                          {item}
+                        </option>
+                      ))}
                     </select>
                   </label>
 

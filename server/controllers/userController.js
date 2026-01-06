@@ -544,15 +544,30 @@ const updateUser = async (req, res, next) => {
       return next(createError(403, 'Access denied'))
     }
 
-    if (req.user.role === 'admin' && existingUser.role !== 'visitor') {
-      return next(createError(403, 'Access denied'))
-    }
-
     // find the user
     const existingUser = await User.findById(id)
     if (!existingUser) {
       return next(createError(404, 'User not found'))
     }
+
+    // PERMISSION LOGIC FIX:
+    // Admin can only edit themselves or visitors
+    if (req.user.role === 'admin') {
+      const isEditingSelf = req.user._id.toString() === id.toString()
+      const isEditingVisitor = existingUser.role === 'visitor'
+
+      if (!isEditingSelf && !isEditingVisitor) {
+        return next(
+          createError(
+            403,
+            'Access denied: Admin can only edit their own profile or visitors'
+          )
+        )
+      }
+    }
+
+    // Head admin can edit anyone (no restrictions)
+    // So we don't need additional checks for head_admin
 
     // Track if status is being changed
     const isStatusChanged = status && status !== existingUser.status
@@ -662,6 +677,23 @@ const updateUser = async (req, res, next) => {
         actionMessage = `Attempted to update ${targetRole} profile (no changes)`
       }
     }
+
+    // Additional permission check for role changes
+    if (role && role !== existingUser.role) {
+      // Only head_admin can change roles
+      if (req.user.role !== 'head_admin') {
+        return next(createError(403, 'Only head admin can change user roles'))
+      }
+
+      // Prevent demoting the last head_admin
+      if (existingUser.role === 'head_admin') {
+        const headAdminCount = await User.countDocuments({ role: 'head_admin' })
+        if (headAdminCount <= 1) {
+          return next(createError(400, 'Cannot demote the last head admin'))
+        }
+      }
+    }
+
     // update fields
     const updatedFieldsData = {
       firstname: firstname || existingUser.firstname,

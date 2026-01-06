@@ -21,6 +21,10 @@ const deploymentSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Truck type is required']
     },
+    requestFrom: {
+      type: String,
+      required: [true, 'Request From is required']
+    },
     helperCount: {
       type: String,
       required: [true, 'Helper count is required']

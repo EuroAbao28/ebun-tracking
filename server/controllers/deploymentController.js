@@ -14,6 +14,7 @@ const createDeployment = async (req, res, next) => {
       truckId,
       driverId,
       truckType,
+      requestFrom,
       helperCount,
       pickupSite,
       destination,
@@ -35,6 +36,7 @@ const createDeployment = async (req, res, next) => {
     validateFields({
       truckId,
       driverId,
+      requestFrom,
       truckType,
       helperCount,
       pickupSite,
@@ -55,6 +57,7 @@ const createDeployment = async (req, res, next) => {
       truckId,
       driverId,
       truckType,
+      requestFrom,
       helperCount,
       pickupSite,
       destination,
@@ -121,6 +124,7 @@ const getAllDeployments = async (req, res, next) => {
     const {
       status,
       search,
+      requestFrom,
       sort = 'latest',
       assignedAt,
       departedAt,
@@ -142,6 +146,25 @@ const getAllDeployments = async (req, res, next) => {
     if (status && status !== '') {
       baseQuery = baseQuery.where('status').equals(status)
     }
+
+    // Request From filter
+    if (requestFrom && requestFrom !== '') {
+      // If user is head_admin or admin and requestFrom is 'all', don't filter by requestFrom
+      // Otherwise, filter by the specific requestFrom value
+      const isAdminOrHeadAdmin =
+        req.user?.role === 'head_admin' || req.user?.role === 'admin'
+      if (!(isAdminOrHeadAdmin && requestFrom === 'all')) {
+        baseQuery = baseQuery.where('requestFrom').equals(requestFrom)
+      }
+      // If admin/head_admin sends 'all', we don't apply any requestFrom filter, returning all companies
+    } else if (req.user?.role !== 'head_admin' && req.user?.role !== 'admin') {
+      // If no requestFrom provided and user is not head_admin or admin, filter by user's company
+      const userCompany = req.user?.company // Adjust this based on your user model
+      if (userCompany) {
+        baseQuery = baseQuery.where('requestFrom').equals(userCompany)
+      }
+    }
+    // If admin/head_admin doesn't provide requestFrom, return all (no filter applied)
 
     // assignedAt filter (filters by createdAt date)
     if (assignedAt) {
@@ -239,6 +262,7 @@ const getAllDeployments = async (req, res, next) => {
         const pickupSite = (deployment.pickupSite || '').toLowerCase()
         const truckType = (deployment.truckType || '').toLowerCase()
         const deploymentCode = (deployment.deploymentCode || '').toLowerCase()
+        const requestFrom = (deployment.requestFrom || '').toLowerCase()
 
         return (
           activeTruckPlate.includes(searchLower) ||
@@ -247,7 +271,8 @@ const getAllDeployments = async (req, res, next) => {
           destination.includes(searchLower) ||
           pickupSite.includes(searchLower) ||
           truckType.includes(searchLower) ||
-          deploymentCode.includes(searchLower)
+          deploymentCode.includes(searchLower) ||
+          requestFrom.includes(searchLower)
         )
       })
     }
@@ -262,6 +287,21 @@ const getAllDeployments = async (req, res, next) => {
     if (status && status !== '') {
       totalQuery = totalQuery.where('status').equals(status)
     }
+
+    // Apply the same requestFrom filtering logic to total count query
+    if (requestFrom && requestFrom !== '') {
+      const isAdminOrHeadAdmin =
+        req.user?.role === 'head_admin' || req.user?.role === 'admin'
+      if (!(isAdminOrHeadAdmin && requestFrom === 'all')) {
+        totalQuery = totalQuery.where('requestFrom').equals(requestFrom)
+      }
+    } else if (req.user?.role !== 'head_admin' && req.user?.role !== 'admin') {
+      const userCompany = req.user?.company
+      if (userCompany) {
+        totalQuery = totalQuery.where('requestFrom').equals(userCompany)
+      }
+    }
+
     if (assignedAt) {
       const targetDate = new Date(assignedAt)
       const startOfDay = new Date(targetDate)
