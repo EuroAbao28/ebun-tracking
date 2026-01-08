@@ -25,7 +25,7 @@ import { toast } from 'react-toastify'
 import { HiDotsHorizontal } from 'react-icons/hi'
 import { NumericFormat } from 'react-number-format'
 import { LuClock } from 'react-icons/lu'
-import { PICKUP_LOCATION } from '../../utils/deploymentOptions'
+import { CLIENT_COMPANY, PICKUP_LOCATION } from '../../utils/deploymentOptions'
 
 function DeploymentDetailsModal ({
   isOpen,
@@ -810,33 +810,47 @@ function DeploymentDetailsModal ({
                         )}
                       </label>
 
-                      {/* type */}
-                      <label className='flex flex-col gap-1'>
-                        <span className='uppercase text-xs text-gray-500 font-semibold'>
-                          Truck Type
-                        </span>
-                        {isEditMode ? (
-                          <div className='relative'>
-                            <select
-                              name='truckType'
-                              value={editForm?.truckType}
-                              onChange={handleChange}
-                              className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
-                            >
-                              {TRUCK_TYPES.map((item, index) => (
-                                <option key={index} value={item.value}>
-                                  {item.label}
-                                </option>
-                              ))}
-                            </select>
-                            <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                          </div>
-                        ) : (
-                          <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize'>
-                            {editForm?.truckType}
-                          </p>
-                        )}
-                      </label>
+                      <div className='grid grid-cols-2 gap-x-6'>
+                        {/* type */}
+                        <label className='flex flex-col gap-1'>
+                          <span className='uppercase text-xs text-gray-500 font-semibold'>
+                            Truck Type
+                          </span>
+                          {isEditMode ? (
+                            <div className='relative'>
+                              <select
+                                name='truckType'
+                                value={editForm?.truckType}
+                                onChange={handleChange}
+                                className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
+                              >
+                                {TRUCK_TYPES.map((item, index) => (
+                                  <option key={index} value={item.value}>
+                                    {item.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
+                            </div>
+                          ) : (
+                            <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize'>
+                              {editForm?.truckType}
+                            </p>
+                          )}
+                        </label>
+
+                        {/* helper count */}
+                        <InputField
+                          label='Helper Count'
+                          type='number'
+                          name='helperCount'
+                          placeholder='Helper Count'
+                          value={editForm?.helperCount}
+                          disabled={!isEditMode}
+                          onChange={handleChange}
+                          formatNumber={true}
+                        />
+                      </div>
 
                       {/* driver */}
                       <label className='flex flex-col gap-1'>
@@ -926,59 +940,28 @@ function DeploymentDetailsModal ({
 
                       <div className='grid grid-cols-2 gap-6'>
                         <InputField
-                          label='Helper Count'
+                          label='Sacks Count'
                           type='number'
-                          name='helperCount'
-                          placeholder='Helper Count'
-                          value={editForm?.helperCount}
+                          name='sacksCount'
+                          value={editForm?.sacksCount}
                           disabled={!isEditMode}
                           onChange={handleChange}
                           formatNumber={true}
+                          thousandSeparator={true}
+                          decimalScale={0}
                         />
 
-                        {/* status */}
-                        <label className='flex flex-col gap-1'>
-                          <span className='uppercase text-xs text-gray-500 font-semibold'>
-                            Status
-                          </span>
-                          {isEditMode ? (
-                            <div className='relative'>
-                              <select
-                                name='status'
-                                value={editForm?.status}
-                                onChange={handleChange}
-                                className='outline outline-gray-200 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
-                              >
-                                {DEPLOYMENT_STATUS.map((item, index) => (
-                                  <option key={index} value={item.value}>
-                                    {item.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                            </div>
-                          ) : (
-                            <div className='outline outline-gray-200 px-3 py-2 rounded'>
-                              <p
-                                className={clsx(
-                                  'capitalize w-fit px-2 py-0.5 rounded-full text-sm',
-                                  {
-                                    'bg-orange-500/10 text-orange-500':
-                                      editForm?.status === 'preparing',
-                                    'bg-emerald-500/10 text-emerald-500':
-                                      editForm?.status === 'ongoing',
-                                    'bg-blue-500/10 text-blue-500':
-                                      editForm?.status === 'completed',
-                                    'bg-red-500/10 text-red-500':
-                                      editForm?.status === 'canceled'
-                                  }
-                                )}
-                              >
-                                {editForm?.status}
-                              </p>
-                            </div>
-                          )}
-                        </label>
+                        <InputField
+                          label='Load Weight (kg)'
+                          type='number'
+                          name='loadWeightKg'
+                          value={editForm?.loadWeightKg}
+                          disabled={!isEditMode}
+                          onChange={handleChange}
+                          formatNumber={true}
+                          thousandSeparator={true}
+                          decimalScale={2}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1084,35 +1067,49 @@ function DeploymentDetailsModal ({
                         )}
                       </label>
 
-                      {/* type */}
-                      <label className='flex flex-col gap-1'>
-                        <span className='uppercase text-xs text-gray-500 font-semibold'>
-                          Truck Type
-                        </span>
-                        {isEditMode ? (
-                          <div className='relative'>
-                            <select
-                              name='replacement.replacementTruckType'
-                              value={
-                                editForm?.replacement?.replacementTruckType
-                              }
-                              onChange={handleChange}
-                              className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
-                            >
-                              {TRUCK_TYPES.map((item, index) => (
-                                <option key={index} value={item.value}>
-                                  {item.label}
-                                </option>
-                              ))}
-                            </select>
-                            <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                          </div>
-                        ) : (
-                          <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize'>
-                            {editForm?.replacement?.replacementTruckType}
-                          </p>
-                        )}
-                      </label>
+                      <div className='grid grid-cols-2 gap-x-6'>
+                        {/* type */}
+                        <label className='flex flex-col gap-1'>
+                          <span className='uppercase text-xs text-gray-500 font-semibold'>
+                            Truck Type
+                          </span>
+                          {isEditMode ? (
+                            <div className='relative'>
+                              <select
+                                name='replacement.replacementTruckType'
+                                value={
+                                  editForm?.replacement?.replacementTruckType
+                                }
+                                onChange={handleChange}
+                                className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
+                              >
+                                {TRUCK_TYPES.map((item, index) => (
+                                  <option key={index} value={item.value}>
+                                    {item.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
+                            </div>
+                          ) : (
+                            <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize'>
+                              {editForm?.replacement?.replacementTruckType}
+                            </p>
+                          )}
+                        </label>
+
+                        {/* helper count */}
+                        <InputField
+                          label='Helper Count'
+                          type='number'
+                          name='helperCount'
+                          placeholder='Helper Count'
+                          value={editForm?.helperCount}
+                          disabled={!isEditMode}
+                          onChange={handleChange}
+                          formatNumber={true}
+                        />
+                      </div>
 
                       {/* driver */}
                       <label className='flex flex-col gap-1'>
@@ -1211,59 +1208,28 @@ function DeploymentDetailsModal ({
 
                       <div className='grid grid-cols-2 gap-6'>
                         <InputField
-                          label='Helper Count'
+                          label='Sacks Count'
                           type='number'
-                          name='helperCount'
-                          placeholder='Helper Count'
-                          value={editForm?.helperCount}
+                          name='sacksCount'
+                          value={editForm?.sacksCount}
                           disabled={!isEditMode}
                           onChange={handleChange}
                           formatNumber={true}
+                          thousandSeparator={true}
+                          decimalScale={0}
                         />
 
-                        {/* status */}
-                        <label className='flex flex-col gap-1'>
-                          <span className='uppercase text-xs text-gray-500 font-semibold'>
-                            Status
-                          </span>
-                          {isEditMode ? (
-                            <div className='relative'>
-                              <select
-                                name='status'
-                                value={editForm?.status}
-                                onChange={handleChange}
-                                className='outline outline-gray-200 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
-                              >
-                                {DEPLOYMENT_STATUS.map((item, index) => (
-                                  <option key={index} value={item.value}>
-                                    {item.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                            </div>
-                          ) : (
-                            <div className='outline outline-gray-200 px-3 py-2 rounded'>
-                              <p
-                                className={clsx(
-                                  'capitalize w-fit px-2 py-0.5 rounded-full text-sm',
-                                  {
-                                    'bg-orange-500/10 text-orange-500':
-                                      editForm?.status === 'preparing',
-                                    'bg-emerald-500/10 text-emerald-500':
-                                      editForm?.status === 'ongoing',
-                                    'bg-blue-500/10 text-blue-500':
-                                      editForm?.status === 'completed',
-                                    'bg-red-500/10 text-red-500':
-                                      editForm?.status === 'canceled'
-                                  }
-                                )}
-                              >
-                                {editForm?.status}
-                              </p>
-                            </div>
-                          )}
-                        </label>
+                        <InputField
+                          label='Load Weight (kg)'
+                          type='number'
+                          name='loadWeightKg'
+                          value={editForm?.loadWeightKg}
+                          disabled={!isEditMode}
+                          onChange={handleChange}
+                          formatNumber={true}
+                          thousandSeparator={true}
+                          decimalScale={2}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1287,21 +1253,37 @@ function DeploymentDetailsModal ({
                     </label>
 
                     <div className='grid grid-cols-2 gap-6'>
-                      <InputField
-                        label='Sacks Count'
-                        type='number'
-                        name='sacksCount'
-                        value={editForm?.sacksCount}
-                        disabled={!isEditMode}
-                        onChange={handleChange}
-                        formatNumber={true}
-                        thousandSeparator={true}
-                        decimalScale={0}
-                      />
+                      {/* request from */}
+                      <label className='flex flex-col gap-1'>
+                        <span className='uppercase text-xs text-gray-500 font-semibold'>
+                          Request From
+                        </span>
+                        {isEditMode ? (
+                          <div className='relative'>
+                            <select
+                              name='requestFrom'
+                              value={editForm?.requestFrom}
+                              onChange={handleChange}
+                              className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
+                            >
+                              {CLIENT_COMPANY.map((item, index) => (
+                                <option key={index} value={item.value}>
+                                  {item.label}
+                                </option>
+                              ))}
+                            </select>
+                            <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
+                          </div>
+                        ) : (
+                          <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize text-nowrap'>
+                            {editForm?.requestFrom}
+                          </p>
+                        )}
+                      </label>
 
                       <InputField
-                        label='Load Weight (kg)'
-                        type='number'
+                        label='Request From'
+                        type='string'
                         name='loadWeightKg'
                         value={editForm?.loadWeightKg}
                         disabled={!isEditMode}

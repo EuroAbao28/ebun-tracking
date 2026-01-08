@@ -439,11 +439,12 @@ function Deployments () {
                   <label className='col-span-2 flex items-center text-sm outline outline-gray-200 rounded py-2 px-3 gap-6'>
                     <p className='font-semibold text-nowrap'>Request From</p>
                     <select
-                      name='sort'
-                      value={tempFilters.sort}
+                      name='requestFrom'
+                      value={tempFilters.requestFrom}
                       onChange={handleChangeFilter}
                       className='w-full focus:outline-none'
                     >
+                      <option value=''>All</option>
                       {CLIENT_COMPANY.map((item, index) => (
                         <option key={index} value={item}>
                           {item}
