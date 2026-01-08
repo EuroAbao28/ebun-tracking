@@ -1258,15 +1258,34 @@ function DeploymentDetailsModal ({
                         <span className='uppercase text-xs text-gray-500 font-semibold'>
                           Request From
                         </span>
+
+                        <div className='relative'>
+                          <div
+                            name='requestFrom'
+                            value={editForm?.requestFrom}
+                            onChange={handleChange}
+                            disabled={true}
+                            className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 w-full capitalize overflow-x-scroll scrollbar-none text-nowrap'
+                          >
+                            {editForm?.requestFrom || 'N/A'}
+                          </div>
+                        </div>
+                      </label>
+
+                      {/* status */}
+                      <label className='flex flex-col gap-1'>
+                        <span className='uppercase text-xs text-gray-500 font-semibold'>
+                          Status
+                        </span>
                         {isEditMode ? (
                           <div className='relative'>
                             <select
-                              name='requestFrom'
-                              value={editForm?.requestFrom}
+                              name='status'
+                              value={editForm?.status}
                               onChange={handleChange}
                               className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
                             >
-                              {CLIENT_COMPANY.map((item, index) => (
+                              {DEPLOYMENT_STATUS.map((item, index) => (
                                 <option key={index} value={item.value}>
                                   {item.label}
                                 </option>
@@ -1275,23 +1294,27 @@ function DeploymentDetailsModal ({
                             <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
                           </div>
                         ) : (
-                          <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize text-nowrap'>
-                            {editForm?.requestFrom}
-                          </p>
+                          <div className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400'>
+                            <p
+                              className={clsx(
+                                'capitalize w-fit px-2 py-0.5 rounded-full text-sm',
+                                {
+                                  'bg-orange-500/10 text-orange-500':
+                                    editForm?.status === 'preparing',
+                                  'bg-emerald-500/10 text-emerald-500':
+                                    editForm?.status === 'ongoing',
+                                  'bg-blue-500/10 text-blue-500':
+                                    editForm?.status === 'completed',
+                                  'bg-red-500/10 text-red-500':
+                                    editForm?.status === 'canceled'
+                                }
+                              )}
+                            >
+                              {editForm?.status}
+                            </p>
+                          </div>
                         )}
                       </label>
-
-                      <InputField
-                        label='Request From'
-                        type='string'
-                        name='loadWeightKg'
-                        value={editForm?.loadWeightKg}
-                        disabled={!isEditMode}
-                        onChange={handleChange}
-                        formatNumber={true}
-                        thousandSeparator={true}
-                        decimalScale={2}
-                      />
                     </div>
 
                     <InputField

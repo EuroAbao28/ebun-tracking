@@ -687,7 +687,7 @@ const StatisField = ({
         </span>
         <div
           className={clsx(
-            'outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400 ',
+            'outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400',
             {
               capitalize: isCapitalize,
               uppercase: isUpperCase,
