@@ -11,3 +11,11 @@ export const USER_STATUS_TYPES = [
   { label: 'Rejected', value: 'rejected' },
   { label: 'Revoked', value: 'revoked' }
 ]
+
+export const VISITOR_COMPANY = [
+  'Strawhat Pirate',
+  'Autobot',
+  'Bandits',
+  'Marines',
+  'Warlords'
+]

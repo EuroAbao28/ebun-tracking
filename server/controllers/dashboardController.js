@@ -8,8 +8,26 @@ const getDashboardAnalytics = async (req, res) => {
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-    // Common filter to exclude soft-deleted records
-    const notDeletedFilter = { isSoftDeleted: { $ne: true } }
+    // Determine if we need to filter by company
+    const user = req.user
+    let companyFilter = {}
+
+    if (user?.role === 'visitor' && user?.company) {
+      // For visitors, only show data from their company
+      companyFilter = { requestFrom: user.company }
+    }
+    // For head_admin and admin, no company filter (show all data)
+
+    // Common filter to exclude soft-deleted records and apply company filter
+    const baseFilter = {
+      isSoftDeleted: { $ne: true },
+      ...companyFilter
+    }
+
+    // For Truck and Driver models, we need to handle differently since they don't have requestFrom field
+    // Assuming trucks and drivers are shared across companies, we'll use company-specific filters
+    // If trucks/drivers are company-specific, you'll need to add company field to those schemas
+    const truckAndDriverFilter = { isSoftDeleted: { $ne: true } }
 
     const [
       // Basic counts
@@ -52,63 +70,63 @@ const getDashboardAnalytics = async (req, res) => {
       preparingDeployments
     ] = await Promise.all([
       // Basic counts - exclude soft-deleted
-      Truck.countDocuments(notDeletedFilter),
-      Driver.countDocuments(notDeletedFilter),
+      Truck.countDocuments(truckAndDriverFilter),
+      Driver.countDocuments(truckAndDriverFilter),
       Deployment.countDocuments({
-        ...notDeletedFilter,
+        ...baseFilter,
         status: { $in: ['ongoing', 'in-progress'] }
       }),
-      Truck.countDocuments({ ...notDeletedFilter, status: 'available' }),
-      Driver.countDocuments({ ...notDeletedFilter, status: 'available' }),
+      Truck.countDocuments({ ...truckAndDriverFilter, status: 'available' }),
+      Driver.countDocuments({ ...truckAndDriverFilter, status: 'available' }),
 
       // Status counts - exclude soft-deleted
-      Truck.countDocuments({ ...notDeletedFilter, status: 'unavailable' }),
-      Truck.countDocuments({ ...notDeletedFilter, status: 'unavailable' }),
-      Driver.countDocuments({ ...notDeletedFilter, status: 'unavailable' }),
-      Deployment.countDocuments({ ...notDeletedFilter, status: 'completed' }),
-      Deployment.countDocuments({ ...notDeletedFilter, status: 'canceled' }),
+      Truck.countDocuments({ ...truckAndDriverFilter, status: 'unavailable' }),
+      Truck.countDocuments({ ...truckAndDriverFilter, status: 'unavailable' }),
+      Driver.countDocuments({ ...truckAndDriverFilter, status: 'unavailable' }),
+      Deployment.countDocuments({ ...baseFilter, status: 'completed' }),
+      Deployment.countDocuments({ ...baseFilter, status: 'canceled' }),
 
       // Recent deployments - exclude soft-deleted
       Deployment.countDocuments({
-        ...notDeletedFilter,
+        ...baseFilter,
         createdAt: { $gte: last7Days }
       }),
       Deployment.countDocuments({
-        ...notDeletedFilter,
+        ...baseFilter,
         createdAt: { $gte: last7Days }
       }),
       Deployment.countDocuments({
-        ...notDeletedFilter,
+        ...baseFilter,
         createdAt: { $gte: last30Days }
       }),
 
       // Truck Status Distribution - exclude soft-deleted
       Truck.aggregate([
-        { $match: notDeletedFilter },
+        { $match: truckAndDriverFilter },
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]),
 
       // Truck Type Distribution - exclude soft-deleted
       Truck.aggregate([
-        { $match: notDeletedFilter },
+        { $match: truckAndDriverFilter },
         { $group: { _id: '$truckType', count: { $sum: 1 } } }
       ]),
 
-      // Truck Condition Analysis - exclude soft-deleted (note: no condition field in schema)
+      // Truck Condition Analysis - exclude soft-deleted
       Truck.aggregate([
-        { $match: notDeletedFilter },
+        { $match: truckAndDriverFilter },
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]),
 
       // Driver Status Distribution - exclude soft-deleted
       Driver.aggregate([
-        { $match: notDeletedFilter },
+        { $match: truckAndDriverFilter },
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]),
 
       // Top Drivers by Trip Count - exclude soft-deleted
       Driver.aggregate([
-        { $match: notDeletedFilter },
+        { $match: truckAndDriverFilter },
         { $sort: { tripCount: -1 } },
         { $limit: 10 },
         {
@@ -126,7 +144,7 @@ const getDashboardAnalytics = async (req, res) => {
       Deployment.aggregate([
         {
           $match: {
-            ...notDeletedFilter,
+            ...baseFilter,
             status: {
               $in: [
                 'completed',
@@ -146,7 +164,7 @@ const getDashboardAnalytics = async (req, res) => {
       Deployment.aggregate([
         {
           $match: {
-            ...notDeletedFilter,
+            ...baseFilter,
             status: { $in: ['completed', 'canceled'] }
           }
         },
@@ -167,7 +185,7 @@ const getDashboardAnalytics = async (req, res) => {
       Deployment.aggregate([
         {
           $match: {
-            ...notDeletedFilter,
+            ...baseFilter,
             status: { $ne: 'canceled' }
           }
         },
@@ -188,7 +206,7 @@ const getDashboardAnalytics = async (req, res) => {
       Deployment.aggregate([
         {
           $match: {
-            ...notDeletedFilter,
+            ...baseFilter,
             status: { $ne: 'canceled' }
           }
         },
@@ -209,7 +227,7 @@ const getDashboardAnalytics = async (req, res) => {
       Deployment.aggregate([
         {
           $match: {
-            ...notDeletedFilter,
+            ...baseFilter,
             destination: { $exists: true, $ne: '' }
           }
         },
@@ -224,12 +242,12 @@ const getDashboardAnalytics = async (req, res) => {
       ]),
 
       // Additional deployment status counts - exclude soft-deleted
-      Deployment.countDocuments({ ...notDeletedFilter, status: 'pending' }),
-      Deployment.countDocuments({ ...notDeletedFilter, status: 'preparing' })
+      Deployment.countDocuments({ ...baseFilter, status: 'pending' }),
+      Deployment.countDocuments({ ...baseFilter, status: 'preparing' })
     ])
 
     // Calculate additional metrics - exclude soft-deleted
-    const totalDeployments = await Deployment.countDocuments(notDeletedFilter)
+    const totalDeployments = await Deployment.countDocuments(baseFilter)
     const completionRate =
       totalDeployments > 0
         ? ((completedDeployments / totalDeployments) * 100).toFixed(1)
@@ -242,7 +260,7 @@ const getDashboardAnalytics = async (req, res) => {
 
     // Calculate active trucks (available + deployed) - exclude soft-deleted
     const activeTrucks = await Truck.countDocuments({
-      ...notDeletedFilter,
+      ...truckAndDriverFilter,
       status: { $in: ['available', 'deployed'] }
     })
 
@@ -257,7 +275,7 @@ const getDashboardAnalytics = async (req, res) => {
     const totalSacksResult = await Deployment.aggregate([
       {
         $match: {
-          ...notDeletedFilter,
+          ...baseFilter,
           status: { $ne: 'canceled' }
         }
       },

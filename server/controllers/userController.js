@@ -534,8 +534,16 @@ const getAllUsers = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params
-    const { firstname, middlename, lastname, email, phoneNo, role, status } =
-      req.body
+    const {
+      firstname,
+      middlename,
+      lastname,
+      email,
+      phoneNo,
+      role,
+      status,
+      company
+    } = req.body
 
     console.log('Update request body:', req.body)
 
@@ -626,6 +634,8 @@ const updateUser = async (req, res, next) => {
       updatedFields.push('phone number')
     if (status && status !== existingUser.status) updatedFields.push('status')
     if (role && role !== existingUser.role) updatedFields.push('role')
+    if (company && company !== existingUser.company)
+      updatedFields.push('company')
     if (req.file) updatedFields.push('profile picture')
 
     // Check if user is updating their own profile
@@ -703,6 +713,7 @@ const updateUser = async (req, res, next) => {
       phoneNo: phoneNo || existingUser.phoneNo,
       role: role || existingUser.role,
       status: status || existingUser.status,
+      company: company || existingUser.company,
       imageUrl,
       imagePublicId
     }

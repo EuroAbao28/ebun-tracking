@@ -54,27 +54,6 @@ function TruckDetailsModal ({
     }
   }
 
-  // Tool handling functions
-  const handleToolChange = e => {
-    const { value, checked } = e.target
-
-    setEditForm(prev => {
-      if (checked) {
-        // Add tool with default quantity of 1
-        return {
-          ...prev,
-          tools: [...prev.tools, { tool: value, quantity: 1 }]
-        }
-      } else {
-        // Remove tool
-        return {
-          ...prev,
-          tools: prev.tools.filter(item => item.tool !== value)
-        }
-      }
-    })
-  }
-
   const handleUpdateTruck = async e => {
     e.preventDefault()
 

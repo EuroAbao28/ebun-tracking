@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Role is required'],
       enum: ['head_admin', 'admin', 'visitor']
     },
+    company: {
+      type: String,
+      default: ''
+    },
     status: {
       type: String,
       required: [true, 'Status is required'],

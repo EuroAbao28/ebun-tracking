@@ -24,6 +24,7 @@ import {
 import { TbRocket, TbChecklist, TbRefresh, TbX } from 'react-icons/tb'
 import { error_illustration } from '../../consts/images'
 import { useUserContext } from '../../contexts/UserContext'
+import clsx from 'clsx'
 
 // Register Chart.js components
 ChartJS.register(
@@ -533,7 +534,12 @@ const Dashboard = () => {
         </div>
 
         {/* Combined Metrics Group */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6'>
+        <div
+          className={clsx('grid grid-cols-1 lg:grid-cols-2 gap-6', {
+            'xl:grid-cols-4': userData.data.role !== 'visitor',
+            'xl:grid-cols-3': userData.data.role === 'visitor'
+          })}
+        >
           {/* Total Deployments */}
           <div className='bg-white p-3 rounded shadow-card3 border border-gray-100 hover:shadow-md transition-shadow duration-200'>
             <div className='flex items-center gap-4'>
@@ -602,39 +608,43 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Total Trucks */}
-          <div className='bg-white p-3 rounded shadow-card3 border border-gray-100 hover:shadow-md transition-shadow duration-200'>
-            <div className='flex items-center gap-4'>
-              <div className='p-2 bg-indigo-50 rounded-lg'>
-                <HiOutlineTruck className='text-3xl text-indigo-600' />
-              </div>
-              <div className='space-y-1'>
-                <div className='text-2xl font-bold text-gray-900'>
-                  {analytics.performanceMetrics.totalTrucks || '0'}
+          {userData.data.role !== 'visitor' && (
+            <>
+              {/* Total Trucks */}
+              <div className='bg-white p-3 rounded shadow-card3 border border-gray-100 hover:shadow-md transition-shadow duration-200'>
+                <div className='flex items-center gap-4'>
+                  <div className='p-2 bg-indigo-50 rounded-lg'>
+                    <HiOutlineTruck className='text-3xl text-indigo-600' />
+                  </div>
+                  <div className='space-y-1'>
+                    <div className='text-2xl font-bold text-gray-900'>
+                      {analytics.performanceMetrics.totalTrucks || '0'}
+                    </div>
+                    <div className='text-sm font-medium text-gray-600'>
+                      Total Trucks
+                    </div>
+                  </div>
                 </div>
-                <div className='text-sm font-medium text-gray-600'>
-                  Total Trucks
-                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Total Drivers */}
-          <div className='bg-white p-3 rounded shadow-card3 border border-gray-100 hover:shadow-md transition-shadow duration-200'>
-            <div className='flex items-center gap-4'>
-              <div className='p-2 bg-cyan-50 rounded-lg'>
-                <HiOutlineUser className='text-3xl text-cyan-600' />
-              </div>
-              <div className='space-y-1'>
-                <div className='text-2xl font-bold text-gray-900'>
-                  {analytics.performanceMetrics.totalDrivers || '0'}
+              {/* Total Drivers */}
+              <div className='bg-white p-3 rounded shadow-card3 border border-gray-100 hover:shadow-md transition-shadow duration-200'>
+                <div className='flex items-center gap-4'>
+                  <div className='p-2 bg-cyan-50 rounded-lg'>
+                    <HiOutlineUser className='text-3xl text-cyan-600' />
+                  </div>
+                  <div className='space-y-1'>
+                    <div className='text-2xl font-bold text-gray-900'>
+                      {analytics.performanceMetrics.totalDrivers || '0'}
+                    </div>
+                    <div className='text-sm font-medium text-gray-600'>
+                      Total Drivers
+                    </div>
+                  </div>
                 </div>
-                <div className='text-sm font-medium text-gray-600'>
-                  Total Drivers
-                </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
 
           {/* Total Sacks */}
           <div className='bg-white p-3 rounded shadow-card3 border border-gray-100 hover:shadow-md transition-shadow duration-200'>

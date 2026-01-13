@@ -147,24 +147,21 @@ const getAllDeployments = async (req, res, next) => {
       baseQuery = baseQuery.where('status').equals(status)
     }
 
-    // Request From filter
+    // Request From filter - Simplified logic
     if (requestFrom && requestFrom !== '') {
-      // If user is head_admin or admin and requestFrom is 'all', don't filter by requestFrom
-      // Otherwise, filter by the specific requestFrom value
-      const isAdminOrHeadAdmin =
-        req.user?.role === 'head_admin' || req.user?.role === 'admin'
-      if (!(isAdminOrHeadAdmin && requestFrom === 'all')) {
-        baseQuery = baseQuery.where('requestFrom').equals(requestFrom)
+      // Apply requestFrom filter regardless of user role when explicitly provided
+      baseQuery = baseQuery.where('requestFrom').equals(requestFrom)
+    } else {
+      // If no requestFrom query parameter is provided
+      if (req.user?.role === 'visitor') {
+        // For visitors, filter by their company
+        const userCompany = req.user?.company
+        if (userCompany) {
+          baseQuery = baseQuery.where('requestFrom').equals(userCompany)
+        }
       }
-      // If admin/head_admin sends 'all', we don't apply any requestFrom filter, returning all companies
-    } else if (req.user?.role !== 'head_admin' && req.user?.role !== 'admin') {
-      // If no requestFrom provided and user is not head_admin or admin, filter by user's company
-      const userCompany = req.user?.company // Adjust this based on your user model
-      if (userCompany) {
-        baseQuery = baseQuery.where('requestFrom').equals(userCompany)
-      }
+      // For head_admin and admin, don't apply any filter when no requestFrom is provided
     }
-    // If admin/head_admin doesn't provide requestFrom, return all (no filter applied)
 
     // assignedAt filter (filters by createdAt date)
     if (assignedAt) {
@@ -290,15 +287,13 @@ const getAllDeployments = async (req, res, next) => {
 
     // Apply the same requestFrom filtering logic to total count query
     if (requestFrom && requestFrom !== '') {
-      const isAdminOrHeadAdmin =
-        req.user?.role === 'head_admin' || req.user?.role === 'admin'
-      if (!(isAdminOrHeadAdmin && requestFrom === 'all')) {
-        totalQuery = totalQuery.where('requestFrom').equals(requestFrom)
-      }
-    } else if (req.user?.role !== 'head_admin' && req.user?.role !== 'admin') {
-      const userCompany = req.user?.company
-      if (userCompany) {
-        totalQuery = totalQuery.where('requestFrom').equals(userCompany)
+      totalQuery = totalQuery.where('requestFrom').equals(requestFrom)
+    } else {
+      if (req.user?.role === 'visitor') {
+        const userCompany = req.user?.company
+        if (userCompany) {
+          totalQuery = totalQuery.where('requestFrom').equals(userCompany)
+        }
       }
     }
 
