@@ -565,13 +565,13 @@ const updateUser = async (req, res, next) => {
       const isEditingVisitor = existingUser.role === 'visitor'
 
       if (!isEditingSelf && !isEditingVisitor) {
-        return next(
-          createError(
-            403,
-            'Access denied: Admin can only edit their own profile or visitors'
-          )
-        )
+        return next(createError(403, 'Access denied'))
       }
+    }
+
+    // dont approve the visitor when it has no company
+    if (status === 'active' && !company) {
+      return next(createError(400, 'Company is required before approving'))
     }
 
     // Head admin can edit anyone (no restrictions)
