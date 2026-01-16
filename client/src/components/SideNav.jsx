@@ -1,6 +1,11 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router'
-import { ebun_logo_light, logo, truck_icon } from '../consts/images'
+import {
+  ebun_logo_dark,
+  ebun_logo_light,
+  logo,
+  truck_icon
+} from '../consts/images'
 import clsx from 'clsx'
 import APP_CONFIG from '../config/version'
 import { getNavItemsByRole, SIDEBAR_ITEMS } from '../consts/sidebarItems'
@@ -28,13 +33,13 @@ function SideNav () {
       className='min-w-68 min-h-screen bg-linear-to-b from-primaryColor to-slate-950 shadow-card3 flex flex-col'
     >
       <div className='flex items-center justify-center gap-3 p-6 border-b border-white/10'>
-        <img src={truck_icon} alt='' className='w-14  scale-x-[-1]' />
+        <img src={ebun_logo_light} alt='' className='w-14  scale-x-[-1]' />
         <div>
           <h1 className='font-semibold text-4xl tracking-widest text-white uppercase'>
-            TRUCK
+            EBUN
           </h1>
-          <p className='text-white -mt-1.5 uppercase tracking-wider ml-1'>
-            Yarn?
+          <p className='text-white -mt-1.5 uppercase tracking-wider ml-0.5'>
+            Freight Inc.
           </p>
         </div>
       </div>

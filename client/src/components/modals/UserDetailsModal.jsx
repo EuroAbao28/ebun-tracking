@@ -7,15 +7,14 @@ import {
 import React, { useEffect, useState } from 'react'
 import { IoClose, IoWarning } from 'react-icons/io5'
 import useUpdateUser from '../../hooks/useUpdateUser'
-import { no_image, user_placeholder } from '../../consts/images'
+import { no_image } from '../../consts/images'
 import clsx from 'clsx'
 import { DateTime } from 'luxon'
 import { FaSave, FaTrash, FaUserEdit } from 'react-icons/fa'
 import { MdKeyboardArrowDown } from 'react-icons/md'
-import { USER_STATUS_TYPES, VISITOR_COMPANY } from '../../utils/userOptions'
+import { USER_STATUS_TYPES } from '../../utils/userOptions'
 import { toast } from 'react-toastify'
 import { RiFolderUploadLine } from 'react-icons/ri'
-import { CLIENT_COMPANY } from '../../utils/deploymentOptions'
 
 function UserDetailsModal ({
   isOpen,
@@ -240,48 +239,15 @@ function UserDetailsModal ({
                     onChange={handleChange}
                   />
 
-                  {['head_admin', 'admin'].includes(editForm?.role) ? (
-                    <InputField
-                      label='Role'
-                      type='text'
-                      name='role'
-                      placeholder='Role'
-                      value={editForm?.role}
-                      disabled={true}
-                      onChange={handleChange}
-                    />
-                  ) : (
-                    <label className='flex flex-col gap-1'>
-                      <span className='uppercase text-xs text-gray-500 font-semibold'>
-                        Company
-                      </span>
-
-                      {isEditMode ? (
-                        <div className='relative'>
-                          <select
-                            name='company'
-                            value={editForm?.company}
-                            onChange={handleChange}
-                            className='outline outline-gray-200 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
-                          >
-                            <option value='' disabled>
-                              Select
-                            </option>
-                            {CLIENT_COMPANY.map((item, index) => (
-                              <option key={index} value={item}>
-                                {item}
-                              </option>
-                            ))}
-                          </select>
-                          <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                        </div>
-                      ) : (
-                        <p className='outline outline-gray-200 px-3 py-2 rounded break-all capitalize'>
-                          {editForm?.company || 'N/A'}
-                        </p>
-                      )}
-                    </label>
-                  )}
+                  <InputField
+                    label='Role'
+                    type='text'
+                    name='role'
+                    placeholder='Role'
+                    value={editForm?.role}
+                    disabled={true}
+                    onChange={handleChange}
+                  />
 
                   <div className='grid grid-cols-2 gap-x-4'>
                     <label className='flex flex-col gap-1'>

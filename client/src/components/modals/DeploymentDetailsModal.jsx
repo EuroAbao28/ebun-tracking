@@ -1252,70 +1252,49 @@ function DeploymentDetailsModal ({
                       </p>
                     </label>
 
-                    <div className='grid grid-cols-2 gap-6'>
-                      {/* request from */}
-                      <label className='flex flex-col gap-1'>
-                        <span className='uppercase text-xs text-gray-500 font-semibold'>
-                          Request From
-                        </span>
-
+                    {/* status */}
+                    <label className='flex flex-col gap-1'>
+                      <span className='uppercase text-xs text-gray-500 font-semibold'>
+                        Status
+                      </span>
+                      {isEditMode ? (
                         <div className='relative'>
-                          <div
-                            name='requestFrom'
-                            value={editForm?.requestFrom}
+                          <select
+                            name='status'
+                            value={editForm?.status}
                             onChange={handleChange}
-                            disabled={true}
-                            className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 w-full capitalize overflow-x-scroll scrollbar-none text-nowrap'
+                            className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
                           >
-                            {editForm?.requestFrom || 'N/A'}
-                          </div>
+                            {DEPLOYMENT_STATUS.map((item, index) => (
+                              <option key={index} value={item.value}>
+                                {item.label}
+                              </option>
+                            ))}
+                          </select>
+                          <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
                         </div>
-                      </label>
-
-                      {/* status */}
-                      <label className='flex flex-col gap-1'>
-                        <span className='uppercase text-xs text-gray-500 font-semibold'>
-                          Status
-                        </span>
-                        {isEditMode ? (
-                          <div className='relative'>
-                            <select
-                              name='status'
-                              value={editForm?.status}
-                              onChange={handleChange}
-                              className='outline outline-gray-300 px-3 py-2 rounded focus:outline-gray-400 appearance-none w-full capitalize'
-                            >
-                              {DEPLOYMENT_STATUS.map((item, index) => (
-                                <option key={index} value={item.value}>
-                                  {item.label}
-                                </option>
-                              ))}
-                            </select>
-                            <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                          </div>
-                        ) : (
-                          <div className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400'>
-                            <p
-                              className={clsx(
-                                'capitalize w-fit px-2 py-0.5 rounded-full text-sm',
-                                {
-                                  'bg-orange-500/10 text-orange-500':
-                                    editForm?.status === 'preparing',
-                                  'bg-emerald-500/10 text-emerald-500':
-                                    editForm?.status === 'ongoing',
-                                  'bg-blue-500/10 text-blue-500':
-                                    editForm?.status === 'completed',
-                                  'bg-red-500/10 text-red-500':
-                                    editForm?.status === 'canceled'
-                                }
-                              )}
-                            >
-                              {editForm?.status}
-                            </p>
-                          </div>
-                        )}
-                      </label>
-                    </div>
+                      ) : (
+                        <div className='outline outline-gray-200 px-3 py-2 rounded break-all focus:outline-gray-400'>
+                          <p
+                            className={clsx(
+                              'capitalize w-fit px-2 py-0.5 rounded-full text-sm',
+                              {
+                                'bg-orange-500/10 text-orange-500':
+                                  editForm?.status === 'preparing',
+                                'bg-emerald-500/10 text-emerald-500':
+                                  editForm?.status === 'ongoing',
+                                'bg-blue-500/10 text-blue-500':
+                                  editForm?.status === 'completed',
+                                'bg-red-500/10 text-red-500':
+                                  editForm?.status === 'canceled'
+                              }
+                            )}
+                          >
+                            {editForm?.status}
+                          </p>
+                        </div>
+                      )}
+                    </label>
 
                     <InputField
                       label='Pick-up Location'

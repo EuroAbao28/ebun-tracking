@@ -8,25 +8,12 @@ const getDashboardAnalytics = async (req, res) => {
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
     const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-    // Determine if we need to filter by company
-    const user = req.user
-    let companyFilter = {}
-
-    if (user?.role === 'visitor' && user?.company) {
-      // For visitors, only show data from their company
-      companyFilter = { requestFrom: user.company }
-    }
-    // For head_admin and admin, no company filter (show all data)
-
-    // Common filter to exclude soft-deleted records and apply company filter
+    // Common filter to exclude soft-deleted records
     const baseFilter = {
-      isSoftDeleted: { $ne: true },
-      ...companyFilter
+      isSoftDeleted: { $ne: true }
     }
 
-    // For Truck and Driver models, we need to handle differently since they don't have requestFrom field
-    // Assuming trucks and drivers are shared across companies, we'll use company-specific filters
-    // If trucks/drivers are company-specific, you'll need to add company field to those schemas
+    // For Truck and Driver models
     const truckAndDriverFilter = { isSoftDeleted: { $ne: true } }
 
     const [

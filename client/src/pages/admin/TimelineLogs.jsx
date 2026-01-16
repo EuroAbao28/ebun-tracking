@@ -15,15 +15,13 @@ import clsx from 'clsx'
 import { DateTime } from 'luxon'
 import TimelineLogDetailsModal from '../../components/modals/TimelineLogDetailsModal'
 import ReplacementHistoryModal from '../../components/modals/ReplacementHistoryModal'
-import { CLIENT_COMPANY } from '../../utils/deploymentOptions'
 
 const defaultFilters = {
   sort: 'latest',
-  requestFrom: '',
   status: '',
   date: '',
   search: '',
-  perPage: 40,
+  perPage: 100,
   page: 1
 }
 
@@ -49,6 +47,17 @@ function TimelineLogs () {
     const { name, value } = e.target
     setTempFilters(prev => ({ ...prev, [name]: value }))
   }
+
+  // Auto-apply search only when search bar is cleared (becomes empty)
+  useEffect(() => {
+    if (tempFilters.search === '' && filters.search !== '') {
+      const delaySearch = setTimeout(() => {
+        setFilters(prev => ({ ...prev, search: '' }))
+      }, 300)
+
+      return () => clearTimeout(delaySearch)
+    }
+  }, [tempFilters.search, filters.search])
 
   const handleApplyFilters = e => {
     e.preventDefault()
@@ -226,23 +235,6 @@ function TimelineLogs () {
                       <option value='ongoing'>Ongoing</option>
                       <option value='completed'>Completed</option>
                       <option value='canceled'>Canceled</option>
-                    </select>
-                  </label>
-
-                  <label className='col-span-2 flex items-center text-sm outline outline-gray-200 rounded py-2 px-3 gap-6'>
-                    <p className='font-semibold text-nowrap'>Request From</p>
-                    <select
-                      name='requestFrom'
-                      value={tempFilters.requestFrom}
-                      onChange={handleChangeFilter}
-                      className='w-full focus:outline-none'
-                    >
-                      <option value=''>All</option>
-                      {CLIENT_COMPANY.map((item, index) => (
-                        <option key={index} value={item}>
-                          {item}
-                        </option>
-                      ))}
                     </select>
                   </label>
 

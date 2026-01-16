@@ -12,7 +12,7 @@ import {
 } from '@headlessui/react'
 import { IoClose } from 'react-icons/io5'
 import { useState } from 'react'
-import { MdKeyboardArrowDown, MdCheck } from 'react-icons/md'
+import { MdKeyboardArrowDown } from 'react-icons/md'
 import { toast } from 'react-toastify'
 import { TRUCK_TYPES } from '../../utils/generalOptions'
 import clsx from 'clsx'
@@ -31,7 +31,6 @@ function CreateDeploymentModal ({ isOpen, onClose, onCreate, trucks, drivers }) 
     destination: '',
     sacksCount: 0,
     departed: '',
-    requestFrom: '',
     pickupIn: '',
     pickupOut: '',
     destArrival: '',
@@ -95,7 +94,6 @@ function CreateDeploymentModal ({ isOpen, onClose, onCreate, trucks, drivers }) 
       destination: '',
       sacksCount: 0,
       departed: '',
-      requestFrom: '',
       pickupIn: '',
       pickupOut: '',
       destArrival: '',
@@ -279,32 +277,6 @@ function CreateDeploymentModal ({ isOpen, onClose, onCreate, trucks, drivers }) 
                     </div>
                   </Combobox>
                 </div>
-
-                {/* request from */}
-                <label className='flex flex-col gap-1'>
-                  <span className='uppercase text-xs text-gray-500 font-semibold'>
-                    Request From
-                  </span>
-                  <div className='relative'>
-                    <select
-                      name='requestFrom'
-                      value={formData.requestFrom}
-                      onChange={handleChange}
-                      required
-                      className='outline outline-gray-300 px-3 py-2 rounded focus:outline-2 focus:outline-gray-400 appearance-none w-full'
-                    >
-                      <option value='' disabled>
-                        Select
-                      </option>
-                      {CLIENT_COMPANY.map((item, index) => (
-                        <option key={index} value={item}>
-                          {item}
-                        </option>
-                      ))}
-                    </select>
-                    <MdKeyboardArrowDown className='absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 text-lg' />
-                  </div>
-                </label>
 
                 <div className='grid grid-cols-2 gap-x-6'>
                   {/* type */}

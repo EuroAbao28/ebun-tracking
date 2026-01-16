@@ -14,7 +14,6 @@ const createDeployment = async (req, res, next) => {
       truckId,
       driverId,
       truckType,
-      requestFrom,
       helperCount,
       pickupSite,
       destination,
@@ -36,7 +35,6 @@ const createDeployment = async (req, res, next) => {
     validateFields({
       truckId,
       driverId,
-      requestFrom,
       truckType,
       helperCount,
       pickupSite,
@@ -57,7 +55,6 @@ const createDeployment = async (req, res, next) => {
       truckId,
       driverId,
       truckType,
-      requestFrom,
       helperCount,
       pickupSite,
       destination,
@@ -124,7 +121,6 @@ const getAllDeployments = async (req, res, next) => {
     const {
       status,
       search,
-      requestFrom,
       sort = 'latest',
       assignedAt,
       departedAt,
@@ -145,22 +141,6 @@ const getAllDeployments = async (req, res, next) => {
     // Status filter
     if (status && status !== '') {
       baseQuery = baseQuery.where('status').equals(status)
-    }
-
-    // Request From filter - Simplified logic
-    if (requestFrom && requestFrom !== '') {
-      // Apply requestFrom filter regardless of user role when explicitly provided
-      baseQuery = baseQuery.where('requestFrom').equals(requestFrom)
-    } else {
-      // If no requestFrom query parameter is provided
-      if (req.user?.role === 'visitor') {
-        // For visitors, filter by their company
-        const userCompany = req.user?.company
-        if (userCompany) {
-          baseQuery = baseQuery.where('requestFrom').equals(userCompany)
-        }
-      }
-      // For head_admin and admin, don't apply any filter when no requestFrom is provided
     }
 
     // assignedAt filter (filters by createdAt date)
@@ -259,7 +239,6 @@ const getAllDeployments = async (req, res, next) => {
         const pickupSite = (deployment.pickupSite || '').toLowerCase()
         const truckType = (deployment.truckType || '').toLowerCase()
         const deploymentCode = (deployment.deploymentCode || '').toLowerCase()
-        const requestFrom = (deployment.requestFrom || '').toLowerCase()
 
         return (
           activeTruckPlate.includes(searchLower) ||
@@ -268,8 +247,7 @@ const getAllDeployments = async (req, res, next) => {
           destination.includes(searchLower) ||
           pickupSite.includes(searchLower) ||
           truckType.includes(searchLower) ||
-          deploymentCode.includes(searchLower) ||
-          requestFrom.includes(searchLower)
+          deploymentCode.includes(searchLower)
         )
       })
     }
@@ -283,18 +261,6 @@ const getAllDeployments = async (req, res, next) => {
 
     if (status && status !== '') {
       totalQuery = totalQuery.where('status').equals(status)
-    }
-
-    // Apply the same requestFrom filtering logic to total count query
-    if (requestFrom && requestFrom !== '') {
-      totalQuery = totalQuery.where('requestFrom').equals(requestFrom)
-    } else {
-      if (req.user?.role === 'visitor') {
-        const userCompany = req.user?.company
-        if (userCompany) {
-          totalQuery = totalQuery.where('requestFrom').equals(userCompany)
-        }
-      }
     }
 
     if (assignedAt) {

@@ -10,9 +10,6 @@ import {
   MdOutlineKeyboardArrowLeft,
   MdOutlineKeyboardArrowRight
 } from 'react-icons/md'
-import { IoClose } from 'react-icons/io5'
-import clsx from 'clsx'
-import { TRUCK_TYPES } from '../../utils/generalOptions'
 import useGetAllActivityLogs from '../../hooks/useGetAllActivityLogs'
 import { DateTime } from 'luxon'
 
@@ -20,7 +17,7 @@ const defaultFilters = {
   type: '',
   sort: 'latest',
   date: '',
-  perPage: 40,
+  perPage: 100,
   page: 1
 }
 
@@ -33,7 +30,6 @@ function ActivityLogsPage () {
   const [total, setTotal] = useState(null)
   const [totalPages, setTotalPages] = useState(null)
   const [error, setError] = useState(null)
-  const [selectedActivityLogs, setSelectedActivityLogs] = useState({})
 
   const [filters, setFilters] = useState(defaultFilters)
   const [tempFilters, setTempFilters] = useState(defaultFilters)

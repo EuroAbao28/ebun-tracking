@@ -3,15 +3,7 @@ const TimelineLog = require('../models/timelineLogsModel')
 
 const getAllTimelineLogs = async (req, res, next) => {
   try {
-    const {
-      status,
-      search,
-      sort,
-      perPage,
-      page = 1,
-      date,
-      requestFrom
-    } = req.query
+    const { status, search, sort, perPage, page = 1, date } = req.query
 
     // Build base query with population
     let baseQuery = TimelineLog.find()
@@ -65,55 +57,43 @@ const getAllTimelineLogs = async (req, res, next) => {
     // Execute query
     let timelineLogs = await baseQuery
 
-    // Apply requestFrom filter after population
-    if (requestFrom && requestFrom !== '') {
-      const isAdminOrHeadAdmin =
-        req.user?.role === 'head_admin' || req.user?.role === 'admin'
-      if (!(isAdminOrHeadAdmin && requestFrom === 'all')) {
-        timelineLogs = timelineLogs.filter(
-          log => log.targetDeployment?.requestFrom === requestFrom
-        )
-      }
-    } else if (req.user?.role !== 'head_admin' && req.user?.role !== 'admin') {
-      const userCompany = req.user?.company
-      if (userCompany) {
-        timelineLogs = timelineLogs.filter(
-          log => log.targetDeployment?.requestFrom === userCompany
-        )
-      }
-    }
-
     // Apply search filter
     if (search && search !== '') {
       const searchLower = search.toLowerCase()
       timelineLogs = timelineLogs.filter(log => {
+        const deployment = log.targetDeployment
+
+        // Check if replacement exists
+        const hasReplacement =
+          deployment?.replacement?.replacementTruckId ||
+          deployment?.replacement?.replacementDriverId
+
+        // Search truck plate - only replacement if it exists, otherwise original
+        const truckPlate =
+          hasReplacement && deployment?.replacement?.replacementTruckId?.plateNo
+            ? deployment.replacement.replacementTruckId.plateNo.toLowerCase()
+            : (deployment?.truckId?.plateNo || '').toLowerCase()
+
+        // Search driver name - only replacement if it exists, otherwise original
+        const driverFirstname =
+          hasReplacement &&
+          deployment?.replacement?.replacementDriverId?.firstname
+            ? deployment.replacement.replacementDriverId.firstname.toLowerCase()
+            : (deployment?.driverId?.firstname || '').toLowerCase()
+
+        const driverLastname =
+          hasReplacement &&
+          deployment?.replacement?.replacementDriverId?.lastname
+            ? deployment.replacement.replacementDriverId.lastname.toLowerCase()
+            : (deployment?.driverId?.lastname || '').toLowerCase()
+
         const action = (log.action || '').toLowerCase()
-        const deploymentCode = (
-          log.targetDeployment?.deploymentCode || ''
-        ).toLowerCase()
-        const truckPlate = (
-          log.targetDeployment?.truckId?.plateNo ||
-          log.targetDeployment?.replacement?.replacementTruckId?.plateNo ||
-          ''
-        ).toLowerCase()
-        const driverFirstname = (
-          log.targetDeployment?.driverId?.firstname ||
-          log.targetDeployment?.replacement?.replacementDriverId?.firstname ||
-          ''
-        ).toLowerCase()
-        const driverLastname = (
-          log.targetDeployment?.driverId?.lastname ||
-          log.targetDeployment?.replacement?.replacementDriverId?.lastname ||
-          ''
-        ).toLowerCase()
+        const deploymentCode = (deployment?.deploymentCode || '').toLowerCase()
         const performedByFirstname = (
           log.performedBy?.firstname || ''
         ).toLowerCase()
         const performedByLastname = (
           log.performedBy?.lastname || ''
-        ).toLowerCase()
-        const requestFrom = (
-          log.targetDeployment?.requestFrom || ''
         ).toLowerCase()
 
         return (
@@ -123,8 +103,7 @@ const getAllTimelineLogs = async (req, res, next) => {
           driverFirstname.includes(searchLower) ||
           driverLastname.includes(searchLower) ||
           performedByFirstname.includes(searchLower) ||
-          performedByLastname.includes(searchLower) ||
-          requestFrom.includes(searchLower)
+          performedByLastname.includes(searchLower)
         )
       })
     }
@@ -146,31 +125,7 @@ const getAllTimelineLogs = async (req, res, next) => {
       countQuery = countQuery.where('timestamp').gte(startOfDay).lt(endOfDay)
     }
 
-    // We'll populate and then filter for requestFrom in memory for count too
-    let allLogsForCount = await countQuery.populate({
-      path: 'targetDeployment',
-      select: 'requestFrom'
-    })
-
-    // Apply requestFrom filter to count
-    if (requestFrom && requestFrom !== '') {
-      const isAdminOrHeadAdmin =
-        req.user?.role === 'head_admin' || req.user?.role === 'admin'
-      if (!(isAdminOrHeadAdmin && requestFrom === 'all')) {
-        allLogsForCount = allLogsForCount.filter(
-          log => log.targetDeployment?.requestFrom === requestFrom
-        )
-      }
-    } else if (req.user?.role !== 'head_admin' && req.user?.role !== 'admin') {
-      const userCompany = req.user?.company
-      if (userCompany) {
-        allLogsForCount = allLogsForCount.filter(
-          log => log.targetDeployment?.requestFrom === userCompany
-        )
-      }
-    }
-
-    const total = allLogsForCount.length
+    const total = await countQuery.countDocuments()
 
     return res.status(200).json({
       total,

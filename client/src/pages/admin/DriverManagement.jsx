@@ -21,7 +21,7 @@ const defaultFilters = {
   status: '',
   sort: 'latest',
   search: '',
-  perPage: 40,
+  perPage: 100,
   page: 1
 }
 
@@ -47,9 +47,18 @@ function DriverManagement () {
     setTempFilters(prev => ({ ...prev, [name]: value }))
   }
 
+  useEffect(() => {
+    if (tempFilters.search === '' && filters.search !== '') {
+      const delaySearch = setTimeout(() => {
+        setFilters(prev => ({ ...prev, search: '' }))
+      }, 300)
+
+      return () => clearTimeout(delaySearch)
+    }
+  }, [tempFilters.search, filters.search])
+
   const handleApplyFilters = e => {
     e.preventDefault()
-
     setFilters(tempFilters)
   }
 
