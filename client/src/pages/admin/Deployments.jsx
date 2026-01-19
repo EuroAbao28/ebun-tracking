@@ -141,9 +141,21 @@ function Deployments () {
       return typeMappings[lowerType] || capitalizeWords(type.replace(/-/g, ' '))
     }
 
-    // Custom 12-hour time formatter
-    const formatDateTime = dateStr => {
-      if (!dateStr || dateStr === 'Pending') return 'Pending'
+    // Helper function to format replacement reason (replace underscores with spaces)
+    const formatReplacementReason = reason => {
+      if (!reason) return ''
+      // Replace underscores with spaces and capitalize each word
+      return reason
+        .replace(/_/g, ' ')
+        .toLowerCase()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    }
+
+    // Custom 12-hour time formatter for replacement dates
+    const formatReplacementDateTime = dateStr => {
+      if (!dateStr) return ''
 
       try {
         const date = DateTime.fromISO(dateStr).setZone('Asia/Manila')
@@ -162,14 +174,40 @@ function Deployments () {
         // Format: "Dec 27, 2025 2:21 PM"
         return `${month} ${day}, ${year} ${hour12}:${minute} ${period}`
       } catch (error) {
-        console.error('Error formatting date:', dateStr, error)
-        return 'Invalid Date'
+        console.error('Error formatting replacement date:', dateStr, error)
+        return ''
+      }
+    }
+
+    // Custom 12-hour time formatter for timeline fields
+    const formatTimelineDateTime = dateStr => {
+      if (!dateStr || dateStr === 'Pending') return ''
+
+      try {
+        const date = DateTime.fromISO(dateStr).setZone('Asia/Manila')
+
+        // Extract components for manual formatting
+        const month = date.toFormat('MMM') // Dec, Jan, etc.
+        const day = date.day
+        const year = date.year
+        const hour = date.hour
+        const minute = date.minute.toString().padStart(2, '0')
+
+        // Convert to 12-hour format
+        const period = hour >= 12 ? 'PM' : 'AM'
+        const hour12 = hour % 12 || 12 // Convert 0 to 12 for 12 AM
+
+        // Format: "Dec 27, 2025 2:21 PM"
+        return `${month} ${day}, ${year} ${hour12}:${minute} ${period}`
+      } catch (error) {
+        console.error('Error formatting timeline date:', dateStr, error)
+        return ''
       }
     }
 
     // Calculate unloading time
     const calculateUnloadingTime = (destArrival, destDeparture) => {
-      if (!destArrival || !destDeparture) return 'Pending'
+      if (!destArrival || !destDeparture) return ''
 
       try {
         const arrival = DateTime.fromISO(destArrival)
@@ -189,13 +227,13 @@ function Deployments () {
       }
     }
 
-    // Define CSV headers
+    // Define CSV headers (No. column removed)
     const headers = [
-      'No.',
       'Code',
+      // CURRENT details (shows replacement if exists, otherwise original)
       'Plate No',
       'Truck Type',
-      'Driver Name',
+      'Driver',
       'Destination',
       'Status',
       'Departed',
@@ -203,35 +241,64 @@ function Deployments () {
       'Pick-up Out',
       'Dest. Arrival',
       'Dest. Departure',
-      'Unloading Time'
+      'Unloading Time',
+      // ORIGINAL details that were replaced (only populated if there was a replacement)
+      'Orig Plate No',
+      'Orig Truck Type',
+      'Orig Driver',
+      'Replaced At',
+      'Replacement Reason',
+      'Replacement Remarks'
     ]
 
     // Convert deployments to CSV rows
     const rows = allDeployments.map((deployment, index) => {
-      // Determine if replacement data should be used
-      const isReplacement = deployment?.replacement?.replacementTruckId?._id
+      // Determine if there's a replacement
+      const hasReplacement = deployment?.replacement?.replacementTruckId?._id
       const replacement = deployment?.replacement
 
-      // Get plate number
-      const plateNo = isReplacement
+      // CURRENT details (show replacement if exists, otherwise original)
+      const currentPlateNo = hasReplacement
         ? replacement.replacementTruckId?.plateNo || ''
         : deployment.truckId?.plateNo || ''
 
-      // Get truck type
-      const truckType = isReplacement
+      const currentTruckType = hasReplacement
         ? replacement.replacementTruckType
         : deployment.truckType
 
-      // Get driver name
-      const driverObj = isReplacement
+      const currentDriverObj = hasReplacement
         ? replacement.replacementDriverId
         : deployment.driverId
 
-      const driverName = driverObj
-        ? `${capitalizeWords(driverObj.firstname)} ${capitalizeWords(
-            driverObj.lastname
+      const currentDriverName = currentDriverObj
+        ? `${capitalizeWords(currentDriverObj.firstname)} ${capitalizeWords(
+            currentDriverObj.lastname
           )}`
         : ''
+
+      // ORIGINAL details that were replaced (only if there was a replacement)
+      const origPlateNo = hasReplacement
+        ? deployment.truckId?.plateNo || ''
+        : ''
+
+      const origTruckType = hasReplacement ? deployment.truckType || '' : ''
+
+      const origDriverName =
+        hasReplacement && deployment.driverId
+          ? `${capitalizeWords(
+              deployment.driverId.firstname
+            )} ${capitalizeWords(deployment.driverId.lastname)}`
+          : ''
+
+      const replacementDate = hasReplacement
+        ? formatReplacementDateTime(replacement.replacedAt)
+        : ''
+
+      const replacementReason = hasReplacement
+        ? formatReplacementReason(replacement.reason || '')
+        : ''
+
+      const replacementRemarks = hasReplacement ? replacement.remarks || '' : ''
 
       // Format status
       const status = deployment.status
@@ -240,43 +307,62 @@ function Deployments () {
           : capitalizeWords(deployment.status)
         : ''
 
-      // Format destination - preserve existing case for company names
+      // Format destination
       const destination = deployment.destination || ''
 
-      // Handle canceled status - all fields show "Canceled"
+      // Handle canceled status - leave timeline fields blank
       if (deployment.status === 'canceled') {
         return [
-          (filters.page - 1) * filters.perPage + index + 1,
+          // No "No." column
           deployment.deploymentCode || '',
-          plateNo.toUpperCase(),
-          formatTruckType(truckType),
-          driverName,
+          // CURRENT details
+          currentPlateNo.toUpperCase(),
+          formatTruckType(currentTruckType),
+          currentDriverName,
           destination,
           'Canceled',
-          'Canceled',
-          'Canceled',
-          'Canceled',
-          'Canceled',
-          'Canceled',
-          'Canceled'
+          '', // Departed - blank
+          '', // Pick-up In - blank
+          '', // Pick-up Out - blank
+          '', // Dest. Arrival - blank
+          '', // Dest. Departure - blank
+          '', // Unloading Time - blank
+          // ORIGINAL details (only if replaced)
+          origPlateNo.toUpperCase(),
+          formatTruckType(origTruckType),
+          origDriverName,
+          replacementDate,
+          replacementReason,
+          replacementRemarks
         ]
       }
 
       // For non-canceled deployments
       return [
-        (filters.page - 1) * filters.perPage + index + 1,
+        // No "No." column
         deployment.deploymentCode || '',
-        plateNo.toUpperCase(),
-        formatTruckType(truckType),
-        driverName,
+        // CURRENT details
+        currentPlateNo.toUpperCase(),
+        formatTruckType(currentTruckType),
+        currentDriverName,
         destination,
         status,
-        formatDateTime(deployment.departed),
-        formatDateTime(deployment.pickupIn),
-        formatDateTime(deployment.pickupOut),
-        formatDateTime(deployment.destArrival),
-        formatDateTime(deployment.destDeparture),
-        calculateUnloadingTime(deployment.destArrival, deployment.destDeparture)
+        formatTimelineDateTime(deployment.departed),
+        formatTimelineDateTime(deployment.pickupIn),
+        formatTimelineDateTime(deployment.pickupOut),
+        formatTimelineDateTime(deployment.destArrival),
+        formatTimelineDateTime(deployment.destDeparture),
+        calculateUnloadingTime(
+          deployment.destArrival,
+          deployment.destDeparture
+        ),
+        // ORIGINAL details (only if replaced)
+        origPlateNo.toUpperCase(),
+        formatTruckType(origTruckType),
+        origDriverName,
+        replacementDate,
+        replacementReason,
+        replacementRemarks
       ]
     })
 
@@ -317,7 +403,6 @@ function Deployments () {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   }
-
   const handleAddNewDeployment = newDeployment => {
     console.log('NEW DEPLOYMENT', newDeployment)
     setAllDeployments(prev => [newDeployment, ...prev])

@@ -675,6 +675,7 @@ const updateDeployment = async (req, res, next) => {
 
     if (finalStatus === 'canceled' && originalStatus !== 'canceled') {
       await createOrUpdateTimelineLog('canceled', now, 'canceled')
+      // await createActivityLog('Deployment has been canceled')
     }
 
     if (originalStatus === 'canceled' && finalStatus !== 'canceled') {
@@ -710,6 +711,7 @@ const updateDeployment = async (req, res, next) => {
         departed,
         finalStatus || 'ongoing'
       )
+      await createActivityLog('Departed from station')
     }
 
     if (
@@ -724,6 +726,7 @@ const updateDeployment = async (req, res, next) => {
         pickupIn,
         finalStatus || 'ongoing'
       )
+      await createActivityLog('Arrived at pickup location')
     }
 
     if (
@@ -738,6 +741,7 @@ const updateDeployment = async (req, res, next) => {
         pickupOut,
         finalStatus || 'ongoing'
       )
+      await createActivityLog('Departed from pickup location')
     }
 
     if (
@@ -752,6 +756,7 @@ const updateDeployment = async (req, res, next) => {
         destArrival,
         finalStatus || 'ongoing'
       )
+      await createActivityLog('Arrived at destination')
     }
 
     if (
@@ -766,6 +771,7 @@ const updateDeployment = async (req, res, next) => {
         destDeparture,
         'completed'
       )
+      await createActivityLog('Departed from destination')
     }
 
     // Activity logs for truck replacement
